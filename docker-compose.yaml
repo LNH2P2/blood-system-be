@@ -1,0 +1,50 @@
+services:
+  blood-system-api:
+    image: blood-system-api
+    container_name: blood-system-api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.docker
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - blood-system-network
+
+  db:
+    image: mongo:latest
+    container_name: blood-system-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - '${DATABASE_PORT}:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    networks:
+      - blood-system-network
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: blood-system-redis
+    restart: always
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+      - '${REDIS_UI_PORT}:${REDIS_UI_PORT}'
+    volumes:
+      - redis_data:/data
+    environment:
+      REDIS_ARGS: '--requirepass ${REDIS_PASSWORD}'
+    networks:
+      - blood-system-network
+
+volumes:
+  mongo_data:
+  redis_data:
+
+networks:
+  blood-system-network:
+    driver: bridge
