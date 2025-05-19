@@ -2,17 +2,38 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CatModule } from './api/cat/cat.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AllConfigType } from '@config/config.type';
+import databaseConfig from '@database/config/database.config';
+import { CatModule } from '@api/cat/cat.module';
+import appConfig from '@config/app.config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://mongo:mongo@localhost:27019/test', {
-      authSource: 'admin',
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      expandVariables: true,
+      load: [databaseConfig, appConfig],
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<AllConfigType>) => ({
+        uri: configService.get('database.uri', {
+          infer: true,
+        }),
+        user: configService.get('database.username', {
+          infer: true,
+        }),
+        pass: configService.get('database.password', {
+          infer: true,
+        }),
+        dbName: configService.get('database.name', {
+          infer: true,
+        }),
+        authSource: 'admin',
+      }),
     }),
     CatModule,
   ],
