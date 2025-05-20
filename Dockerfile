@@ -22,8 +22,8 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-
-RUN HUSKY=0 npm install --only=production
+RUN npm set-script prepare ""
+RUN npm install --only=production
 
 COPY . .
 
