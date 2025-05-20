@@ -1,10 +1,7 @@
-import { AllConfigType } from '@config/config.type';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import {
-  MongooseModuleOptions,
-  MongooseOptionsFactory,
-} from '@nestjs/mongoose';
+import { AllConfigType } from '@config/config.type'
+import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { MongooseModuleOptions, MongooseOptionsFactory } from '@nestjs/mongoose'
 
 @Injectable()
 export class MongooseConfigService implements MongooseOptionsFactory {
@@ -13,18 +10,18 @@ export class MongooseConfigService implements MongooseOptionsFactory {
   createMongooseOptions(): MongooseModuleOptions {
     return {
       uri: this.configService.get('database.uri', {
-        infer: true,
+        infer: true
       }),
       user: this.configService.get('database.username', {
-        infer: true,
+        infer: true
       }),
       pass: this.configService.get('database.password', {
-        infer: true,
+        infer: true
       }),
       dbName: this.configService.get('database.name', {
-        infer: true,
+        infer: true
       }),
-      authSource: 'admin',
-    } as MongooseModuleOptions;
+      authSource: 'admin'
+    } as MongooseModuleOptions
   }
 }

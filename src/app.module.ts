@@ -1,12 +1,12 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
-import databaseConfig from '@database/config/database.config';
-import { CatModule } from '@api/cat/cat.module';
-import appConfig from '@config/app.config';
-import { MongooseConfigService } from '@database/mongoose-config.service';
+import { Module } from '@nestjs/common'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import { MongooseModule } from '@nestjs/mongoose'
+import { ConfigModule } from '@nestjs/config'
+import databaseConfig from '@database/config/database.config'
+import { CatModule } from '@api/cat/cat.module'
+import appConfig from '@config/app.config'
+import { MongooseConfigService } from '@database/mongoose-config.service'
 
 @Module({
   imports: [
@@ -14,14 +14,14 @@ import { MongooseConfigService } from '@database/mongoose-config.service';
       isGlobal: true,
       envFilePath: '.env',
       expandVariables: true,
-      load: [databaseConfig, appConfig],
+      load: [databaseConfig, appConfig]
     }),
     MongooseModule.forRootAsync({
-      useClass: MongooseConfigService,
+      useClass: MongooseConfigService
     }),
-    CatModule,
+    CatModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}
