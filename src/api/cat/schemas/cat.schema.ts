@@ -1,21 +1,21 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { AbstractSchema } from 'src/database/schemas/abstract.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { HydratedDocument } from 'mongoose'
+import { AbstractSchema } from 'src/database/schemas/abstract.schema'
 
-export type CatDocument = HydratedDocument<Cat>;
+export type CatDocument = HydratedDocument<Cat>
 
 @Schema({
-  timestamps: true,
+  timestamps: true
 })
 export class Cat extends AbstractSchema {
   @Prop()
-  name: string;
+  name: string
 
   @Prop()
-  age: number;
+  age: number
 
   @Prop()
-  breed: string;
+  breed: string
 }
 
-export const CatSchema = SchemaFactory.createForClass(Cat);
+export const CatSchema = SchemaFactory.createForClass(Cat)

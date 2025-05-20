@@ -1,5 +1,5 @@
-import { BadRequestException } from '@nestjs/common';
-import { ErrorCode } from 'src/constants/error-code.constant';
+import { BadRequestException } from '@nestjs/common'
+import { ErrorCode } from 'src/constants/error-code.constant'
 
 /**
  * ValidationException used to throw validation errors with a custom error code and message.
@@ -7,6 +7,6 @@ import { ErrorCode } from 'src/constants/error-code.constant';
  */
 export class ValidationException extends BadRequestException {
   constructor(error: ErrorCode = ErrorCode.V000, message?: string) {
-    super({ errorCode: error, message });
+    super({ errorCode: error, message })
   }
 }

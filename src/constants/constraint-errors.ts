@@ -1,4 +1,4 @@
-import { ErrorCode } from 'src/constants/error-code.constant';
+import { ErrorCode } from 'src/constants/error-code.constant'
 
 export const constraintErrors: Record<string, string> = Object.freeze({
   isEmail: ErrorCode.V001,
@@ -7,5 +7,5 @@ export const constraintErrors: Record<string, string> = Object.freeze({
   isNotEmpty: ErrorCode.V004,
   isDateFormat: ErrorCode.V005,
   isTimeFormat: ErrorCode.V006,
-  isPhoneNumber: ErrorCode.V007,
-});
+  isPhoneNumber: ErrorCode.V007
+})

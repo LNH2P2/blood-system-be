@@ -1,8 +1,9 @@
 // eslint.config.js (Flat Config, đơn giản)
 // @ts-check
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import tseslint, { plugin } from 'typescript-eslint';
 import globals from 'globals';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 export default tseslint.config(
   {
@@ -19,6 +20,9 @@ export default tseslint.config(
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
+    },
+    plugins: {
+      prettier: prettierPlugin,
     },
   },
   {
