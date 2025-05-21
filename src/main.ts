@@ -7,6 +7,7 @@ import { GlobalExceptionFilter } from '@filters/global-exception.filter'
 import helmet from 'helmet'
 import * as compression from 'compression'
 import { AllConfigType } from '@config/config.type'
+import { configSwagger } from '@config/openapi.config'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -42,6 +43,9 @@ async function bootstrap() {
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true
   })
+
+  // Swagger
+  configSwagger(app)
 
   await app.listen(process.env.APP_PORT ?? 3000)
 }
