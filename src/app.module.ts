@@ -9,6 +9,7 @@ import appConfig from '@config/app.config'
 import { MongooseConfigService } from '@database/mongoose-config.service'
 import { DonationMatchModule } from './api/donation-match/donation-match.module'
 import { NotificationModule } from './api/notification/notification.module'
+import { BlogModule } from './api/blog/blog.module'
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { NotificationModule } from './api/notification/notification.module'
     }),
     CatModule,
     DonationMatchModule,
-    NotificationModule
+    NotificationModule,
+    BlogModule
   ],
   controllers: [AppController],
   providers: [AppService]
