@@ -21,8 +21,8 @@ export class NotificationService {
     return this.notificationModel.findById(id)
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`
+  async update(id: string, updateNotificationDto: UpdateNotificationDto) {
+    return this.notificationModel.findByIdAndUpdate(id, updateNotificationDto)
   }
 
   remove(id: number) {
