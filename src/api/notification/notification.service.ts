@@ -25,7 +25,7 @@ export class NotificationService {
     return this.notificationModel.findByIdAndUpdate(id, updateNotificationDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`
+  async remove(id: string) {
+    return this.notificationModel.findByIdAndDelete(id)
   }
 }

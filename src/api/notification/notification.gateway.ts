@@ -36,7 +36,8 @@ export class NotificationGateway {
   }
 
   @SubscribeMessage('removeNotification')
-  remove(@MessageBody() id: number) {
-    return this.notificationService.remove(id)
+  async remove(@MessageBody() id: string) {
+    const notification = await this.notificationService.remove(id)
+    this.server.emit('notificationRemoved', notification)
   }
 }
