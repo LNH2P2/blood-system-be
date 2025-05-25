@@ -13,12 +13,12 @@ export class NotificationService {
     return this.notificationModel.create(createNotificationDto)
   }
 
-  findAll() {
-    return `This action returns all notification`
+  async findAll() {
+    return this.notificationModel.find()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`
+  async findOne(id: string) {
+    return this.notificationModel.findById(id)
   }
 
   update(id: number, updateNotificationDto: UpdateNotificationDto) {

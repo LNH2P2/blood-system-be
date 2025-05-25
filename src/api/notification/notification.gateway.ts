@@ -18,13 +18,15 @@ export class NotificationGateway {
   }
 
   @SubscribeMessage('findAllNotification')
-  findAll() {
-    return this.notificationService.findAll()
+  async findAll() {
+    const notifications = await this.notificationService.findAll()
+    this.server.emit('allNotifications', notifications)
   }
 
   @SubscribeMessage('findOneNotification')
-  findOne(@MessageBody() id: number) {
-    return this.notificationService.findOne(id)
+  async findOne(@MessageBody() id: string) {
+    const notification = await this.notificationService.findOne(id)
+    this.server.emit('notificationFound', notification)
   }
 
   @SubscribeMessage('updateNotification')
