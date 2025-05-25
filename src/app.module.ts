@@ -7,6 +7,7 @@ import databaseConfig from '@database/config/database.config'
 import { CatModule } from '@api/cat/cat.module'
 import appConfig from '@config/app.config'
 import { MongooseConfigService } from '@database/mongoose-config.service'
+import { NotificationModule } from './api/notification/notification.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { MongooseConfigService } from '@database/mongoose-config.service'
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService
     }),
-    CatModule
+    CatModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [AppService]
