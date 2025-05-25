@@ -8,6 +8,7 @@ import { CatModule } from '@api/cat/cat.module'
 import appConfig from '@config/app.config'
 import { MongooseConfigService } from '@database/mongoose-config.service'
 import { NotificationModule } from './api/notification/notification.module'
+import { BlogModule } from './api/blog/blog.module'
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { NotificationModule } from './api/notification/notification.module'
       useClass: MongooseConfigService
     }),
     CatModule,
-    NotificationModule
+    NotificationModule,
+    BlogModule
   ],
   controllers: [AppController],
   providers: [AppService]
