@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
-import { Blog, BlogDocument } from './schema/blog.schema'
+import { Blog, BlogDocument } from './schemas/blog.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
