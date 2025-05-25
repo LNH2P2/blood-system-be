@@ -1,34 +1,34 @@
-import { Prop } from "@nestjs/mongoose";
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { DonationMatchStatus } from "src/constants/donation.constant";
+import { Prop } from '@nestjs/mongoose'
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { DonationMatchStatus } from 'src/constants/donation.constant'
 
 export class CreateDonationMatchDto {
   @IsString()
   @IsNotEmpty()
-  requestId: string;
+  requestId: string
 
   @IsString()
   @IsNotEmpty()
-  donorId: string;
+  donorId: string
 
   @IsString()
   @IsNotEmpty()
-  bloodBankId: string;
+  bloodBankId: string
 
   @IsString()
   @IsNotEmpty()
   @IsEnum(DonationMatchStatus)
-  status: DonationMatchStatus;
+  status: DonationMatchStatus
 
   @IsDateString()
   @IsNotEmpty()
-  scheduleDate: Date;
+  scheduleDate: Date
 
   @IsOptional()
   @IsDateString()
-  completedDate?: Date;
+  completedDate?: Date
 
   @IsOptional()
   @IsString()
-  note?: string 
+  note?: string
 }
