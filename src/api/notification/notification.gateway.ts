@@ -30,8 +30,9 @@ export class NotificationGateway {
   }
 
   @SubscribeMessage('updateNotification')
-  update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(updateNotificationDto.id, updateNotificationDto)
+  async update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
+    const notification = await this.notificationService.update(updateNotificationDto.id, updateNotificationDto)
+    this.server.emit('notificationUpdated', notification)
   }
 
   @SubscribeMessage('removeNotification')
