@@ -8,6 +8,7 @@ import { CatModule } from '@api/cat/cat.module'
 import appConfig from '@config/app.config'
 import { MongooseConfigService } from '@database/mongoose-config.service'
 import { DonationMatchModule } from './api/donation-match/donation-match.module';
+import { NotificationModule } from './api/notification/notification.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { DonationMatchModule } from './api/donation-match/donation-match.module'
       useClass: MongooseConfigService
     }),
     CatModule,
-    DonationMatchModule
+    DonationMatchModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [AppService]
