@@ -1,15 +1,15 @@
+import { DonationRequestService } from '@api/donation-request/donation-request.service'
 import { Test, TestingModule } from '@nestjs/testing'
-import { DonationMatchService } from './donation-match.service'
 
 describe('DonationMatchService', () => {
-  let service: DonationMatchService
+  let service: DonationRequestService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DonationMatchService]
+      providers: [DonationRequestService]
     }).compile()
 
-    service = module.get<DonationMatchService>(DonationMatchService)
+    service = module.get<DonationRequestService>(DonationRequestService)
   })
 
   it('should be defined', () => {

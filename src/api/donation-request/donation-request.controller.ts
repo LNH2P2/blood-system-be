@@ -1,34 +1,34 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
-import { DonationMatchService } from './donation-match.service'
 import { CreateDonationMatchDto } from './dto/create-donation-match.dto'
 import { UpdateDonationMatchDto } from './dto/update-donation-match.dto'
+import { DonationRequestService } from '@api/donation-request/donation-request.service'
 
-@Controller('donation-match')
-export class DonationMatchController {
-  constructor(private readonly donationMatchService: DonationMatchService) {}
+@Controller('donation-request')
+export class DonationRequestController {
+  constructor(private readonly donationRequestService: DonationRequestService) {}
 
   @Post()
   create(@Body() createDonationMatchDto: CreateDonationMatchDto) {
-    return this.donationMatchService.create(createDonationMatchDto)
+    return this.donationRequestService.create(createDonationMatchDto)
   }
 
   @Get()
   findAll() {
-    return this.donationMatchService.findAll()
+    return this.donationRequestService.findAll()
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.donationMatchService.findOne(+id)
+    return this.donationRequestService.findOne(id)
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDonationMatchDto: UpdateDonationMatchDto) {
-    return this.donationMatchService.update(+id, updateDonationMatchDto)
+    return this.donationRequestService.update(+id, updateDonationMatchDto)
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.donationMatchService.remove(+id)
+    return this.donationRequestService.remove(+id)
   }
 }

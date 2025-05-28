@@ -3,10 +3,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 import { DonationMatchStatus } from 'src/constants/donation.constant'
 
-export type DonationMatchDocument = HydratedDocument<DonationMatch>
+export type DonationRequestDocument = HydratedDocument<DonationRequest>
 
 @Schema({ timestamps: true, collection: 'donation_matches' })
-export class DonationMatch extends AbstractSchema {
+export class DonationRequest extends AbstractSchema {
   @Prop({ required: true })
   requestId: string
 
@@ -29,4 +29,4 @@ export class DonationMatch extends AbstractSchema {
   note?: string
 }
 
-export const DonationMatchSchema = SchemaFactory.createForClass(DonationMatch)
+export const DonationRequestSchema = SchemaFactory.createForClass(DonationRequest)

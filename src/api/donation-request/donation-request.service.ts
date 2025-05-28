@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { CreateDonationMatchDto } from './dto/create-donation-match.dto'
 import { UpdateDonationMatchDto } from './dto/update-donation-match.dto'
-import { DonationMatch, DonationMatchDocument } from '@api/donation-match/schemas/donation-match.schema'
+import { DonationRequest, DonationRequestDocument } from '@api/donation-request/schemas/donation-request.schema'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 
 @Injectable()
-export class DonationMatchService {
-  constructor(@InjectModel(DonationMatch.name) private donationMatchModel: Model<DonationMatchDocument>) {}
+export class DonationRequestService {
+  constructor(@InjectModel(DonationRequest.name) private donationMatchModel: Model<DonationRequestDocument>) {}
   create(createDonationMatchDto: CreateDonationMatchDto) {
     // 1. check trong ngân hàng máu còn máu phù hợp với request không
 
@@ -23,8 +23,8 @@ export class DonationMatchService {
     return `This action returns all donationMatch`
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} donationMatch`
+  findOne(id: string) {
+    return this.donationMatchModel.findById(id)
   }
 
   update(id: number, updateDonationMatchDto: UpdateDonationMatchDto) {
