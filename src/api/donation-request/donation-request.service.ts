@@ -1,33 +1,26 @@
 import { Injectable } from '@nestjs/common'
-import { CreateDonationMatchDto } from './dto/create-donation-match.dto'
-import { UpdateDonationMatchDto } from './dto/update-donation-match.dto'
 import { DonationRequest, DonationRequestDocument } from '@api/donation-request/schemas/donation-request.schema'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
+import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
+import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
 
 @Injectable()
 export class DonationRequestService {
   constructor(@InjectModel(DonationRequest.name) private donationMatchModel: Model<DonationRequestDocument>) {}
-  create(createDonationMatchDto: CreateDonationMatchDto) {
-    // 1. check trong ngân hàng máu còn máu phù hợp với request không
-
-    // 2.1 nếu có thì update lại số lượng máu trong ngân hàng máu
-
-    // 2.2 nếu không thì tạo mới một donation match
-
-    // 3. tạo mới một donation match
-    return this.donationMatchModel.create(createDonationMatchDto)
+  async create(createDonationRequestDto: CreateDonationRequestDto) {
+    return await this.donationMatchModel.create(createDonationRequestDto)
   }
 
-  findAll() {
-    return `This action returns all donationMatch`
+  async findAll() {
+    return await this.donationMatchModel.find()
   }
 
   findOne(id: string) {
     return this.donationMatchModel.findById(id)
   }
 
-  update(id: number, updateDonationMatchDto: UpdateDonationMatchDto) {
+  update(id: number, updateDonationMatchDto: UpdateDonationRequestDto) {
     return `This action updates a #${id} donationMatch`
   }
 
