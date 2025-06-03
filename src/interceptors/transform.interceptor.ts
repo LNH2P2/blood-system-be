@@ -1,8 +1,9 @@
+import { RESPONSE_MESSAGE_KEY } from '@decorators/response-message.decorator'
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { RESPONSE_MESSAGE_KEY } from '@decorators/response-message.decorator'
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto'
 
 export interface Response<T> {
   statusCode: number
@@ -14,16 +15,24 @@ export interface Response<T> {
 export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
   constructor(private reflector: Reflector) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T> | any> {
     return next.handle().pipe(
       map((data) => {
         const response = context.switchToHttp().getResponse()
         const request = context.switchToHttp().getRequest()
         const statusCode = response.statusCode
 
-        // Lấy custom message từ decorator hoặc tự động generate dựa trên HTTP method
         const customMessage = this.reflector.get<string>(RESPONSE_MESSAGE_KEY, context.getHandler())
         const defaultMessage = this.getDefaultMessage(request.method, statusCode)
+
+        if (data instanceof OffsetPaginatedDto) {
+          return {
+            statusCode,
+            message: customMessage || defaultMessage,
+            data: data.data,
+            pagination: data.pagination
+          }
+        }
 
         return {
           statusCode,

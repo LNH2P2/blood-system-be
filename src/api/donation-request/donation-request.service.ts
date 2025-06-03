@@ -4,16 +4,25 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
 import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
+import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.dto'
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto'
+import { PaginationUtil } from 'src/utils/pagination.util'
 
 @Injectable()
 export class DonationRequestService {
   constructor(@InjectModel(DonationRequest.name) private donationMatchModel: Model<DonationRequestDocument>) {}
+
   async create(createDonationRequestDto: CreateDonationRequestDto) {
     return await this.donationMatchModel.create(createDonationRequestDto)
   }
 
-  async findAll() {
-    return await this.donationMatchModel.find()
+  async findAll(reqDto: ListDonationReqDto) {
+    return await PaginationUtil.paginate({
+      model: this.donationMatchModel,
+      pageOptions: reqDto,
+      searchFields: [],
+      sortField: 'createdAt'
+    })
   }
 
   findOne(id: string) {

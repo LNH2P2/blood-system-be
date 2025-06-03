@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
 import { DonationRequestService } from '@api/donation-request/donation-request.service'
 import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
 import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
+import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.dto'
 import { ResponseMessage } from '@decorators/response-message.decorator'
-import { RESPONSE_MESSAGES } from 'src/constants/response-messages.constant'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 
 @Controller('donation-request')
 export class DonationRequestController {
@@ -17,8 +18,8 @@ export class DonationRequestController {
 
   @Get()
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
-  findAll() {
-    return this.donationRequestService.findAll()
+  findAll(@Query() listDonationReqDto: ListDonationReqDto) {
+    return this.donationRequestService.findAll(listDonationReqDto)
   }
 
   @Get(':id')
