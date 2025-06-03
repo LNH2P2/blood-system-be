@@ -1,6 +1,12 @@
-import { NestFactory } from '@nestjs/core'
+import { NestFactory, Reflector } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { HttpStatus, UnprocessableEntityException, ValidationPipe, VersioningType } from '@nestjs/common'
+import {
+  ClassSerializerInterceptor,
+  HttpStatus,
+  UnprocessableEntityException,
+  ValidationPipe,
+  VersioningType
+} from '@nestjs/common'
 import { ValidationError } from 'class-validator'
 import { ConfigService } from '@nestjs/config'
 import { GlobalExceptionFilter } from '@filters/global-exception.filter'
@@ -8,6 +14,8 @@ import helmet from 'helmet'
 import * as compression from 'compression'
 import { AllConfigType } from '@config/config.type'
 import { configSwagger } from '@config/openapi.config'
+import { TransformInterceptor } from '@interceptors/transform.interceptor'
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -19,9 +27,14 @@ async function bootstrap() {
   app.use(compression())
 
   const configService = app.get(ConfigService<AllConfigType>)
+  const reflector = app.get(Reflector)
+
   app.useGlobalFilters(new GlobalExceptionFilter(configService))
+  app.useGlobalInterceptors(new TransformInterceptor(reflector))
 
   app.setGlobalPrefix(configService.get('app.apiPrefix', { infer: true }) ?? 'api')
+
+  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
 
   app.useGlobalPipes(
     new ValidationPipe({

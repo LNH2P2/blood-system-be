@@ -4,7 +4,8 @@ import { CreateNotificationDto } from './dto/create-notification.dto'
 import { UpdateNotificationDto } from './dto/update-notification.dto'
 import { Server } from 'socket.io'
 
-@WebSocketGateway(80, { namespace: 'notification', cors: { origin: '*' } })
+
+@WebSocketGateway(5001, { namespace: 'notification', cors: { origin: '*' } })
 export class NotificationGateway {
   constructor(private readonly notificationService: NotificationService) {}
 
