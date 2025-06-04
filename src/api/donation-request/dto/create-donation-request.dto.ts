@@ -4,7 +4,7 @@ import { DonationRequestStatus } from 'src/constants/donation.constant'
 export class CreateDonationRequestDto {
   @IsString()
   @IsNotEmpty()
-  requestId: string
+  userId: string
 
   @IsEnum(DonationRequestStatus)
   @IsOptional()
