@@ -65,7 +65,7 @@ export class User {
 
   @Prop({
     type: {
-      _id: { type: SchemaTypes.ObjectId, ref: 'User',default: null },
+      _id: { type: SchemaTypes.ObjectId, ref: 'User', default: null },
       email: { type: String, default: null }
     },
     default: null

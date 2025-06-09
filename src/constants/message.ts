@@ -1,6 +1,5 @@
 // User messages
 export const USER_MESSAGE = {
-
   CREATED_SUCCESS: 'User created successfully',
   UPDATED_SUCCESS: 'User updated successfully',
   CTEATED_ADDRESS_SUCCESS: 'Address created successfully',
@@ -25,12 +24,11 @@ export const USER_MESSAGE = {
   PASSWORD_INCORRECT: 'Old password is incorrect',
   EMAIL_USERNAME_PASSWORD_IS_NULL: 'Email, username, and password cannot be empty',
   CAN_NOT_CHANGE_PASSWORD: 'Can not change password',
-  CODE_EXPIRED: 'Code expired',
+  CODE_EXPIRED: 'Code expired'
 }
-
 
 export const ERROR_MESSAGE = {
   VALIDATION_ERROR: 'Validation error occurred',
   INTERNAL_SERVER_ERROR: 'An internal server error occurred',
-  ID_INVALID: 'The provided ID is invalid',
+  ID_INVALID: 'The provided ID is invalid'
 }
