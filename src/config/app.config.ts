@@ -16,7 +16,7 @@ export default registerAs<AppConfig>('app', () => {
     url: process.env.APP_URL || `http://localhost:${port}`,
     port,
     debug: process.env.APP_DEBUG === 'true',
-    apiPrefix: process.env.API_PREFIX || 'api',
+    apiPrefix: process.env.API_PREFIX || 'api/v1',
     corsOrigin: getCorsOrigin()
   }
 })

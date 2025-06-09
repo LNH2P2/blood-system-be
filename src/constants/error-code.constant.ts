@@ -12,7 +12,12 @@ export enum ErrorCode {
   // Validation
 
   // Error
-  E001 = 'user.error.username_or_email_exists',
+  E001 = 'user.error.username_or_email_exists_or_phone_number_exists',
   E002 = 'user.error.not_found',
-  E003 = 'user.error.email_exists'
+  E003 = 'user.error.email_exists',
+  E004 = 'user.error.phone_number_exists',
+  E005 = 'password.error.can_not_change',
+  E006 = 'id.error.is_invalid',
+  E007 = 'user.error.email_not_exists',
+  E008 = 'user.error.code_expired'
 }

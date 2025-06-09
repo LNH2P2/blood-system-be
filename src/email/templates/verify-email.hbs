@@ -1,0 +1,88 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        text-align: center;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+      }
+      .logo span {
+        color: #1e90ff;
+      }
+      .header {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 20px 0;
+        color: #333;
+      }
+      .time {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 15px 30px;
+        background-color: #49cc90;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .content {
+        font-size: 16px;
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .content strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='logo'>
+        <span>✨</span>
+        Blood_Donation
+        <span>✨</span>
+      </div>
+      <div class='header'>
+        Verify Your Email Address
+      </div>
+      <div class='time'>
+        Sent to:
+        {{user_email}}
+      </div>
+      <button class='button'>
+        {{otp_code}}
+      </button>
+      <div class='content'>
+        <strong>About Your Verification:</strong>
+        Hello! To complete your registration, please verify your email address by input OTP above. This
+        ensures that we have the correct email for your account and helps keep your account secure.
+      </div>
+    </div>
+  </body>
+</html>

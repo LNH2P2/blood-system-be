@@ -24,7 +24,8 @@
       "@utils/*": ["./src/utils/*"],
       "@common/*": ["./src/common/*"],
       "@exceptions/*": ["./src/exceptions/*"],
-      "@filters/*": ["./src/filters/*"]
+      "@filters/*": ["./src/filters/*"],
+      "@constant/*": ["./src/constants/*"]
     }
   }
 }
