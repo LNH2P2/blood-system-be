@@ -61,6 +61,9 @@ export const RESPONSE_MESSAGES = {
     UPADTE_PASSWORD: 'Update password successfully',
     DELETE_SUCCESS: 'User deleted successfully',
     VERIFY_SUCCESS: 'Email verified successfully',
+    RESEND_VERIFICATION_EMAIL_SUCCESS: 'Resend verification email successfully',
+    LOGIN_SUCCESS: 'Login successfully',
+    LOGOUT_SUCCESS: 'Logout successfully',
     //error
     NOT_FOUND: 'User not found',
     EMAIL_EXISTED: 'Email already exists',
@@ -73,7 +76,11 @@ export const RESPONSE_MESSAGES = {
     PASSWORD_INCORRECT: 'Old password is incorrect',
     EMAIL_USERNAME_PASSWORD_IS_NULL: 'Email, username, and password cannot be empty',
     CAN_NOT_CHANGE_PASSWORD: 'Can not change password',
-    CODE_EXPIRED: 'Code expired'
+    CODE_EXPIRED: 'Code expired',
+    WRONG_PASSWORD: 'Wrong password',
+    WRONG_USERNAME: 'Wrong username',
+    UNVERIFIED_EMAIL: 'Email is not verified',
+    USERNAME_OR_PASSWORD_IS_WRONG: 'Username or password is wrong'
   },
 
   ERROR_MESSAGE: {

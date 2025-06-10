@@ -19,5 +19,8 @@ export enum ErrorCode {
   E005 = 'password.error.can_not_change',
   E006 = 'id.error.is_invalid',
   E007 = 'user.error.email_not_exists',
-  E008 = 'user.error.code_expired'
+  E008 = 'user.error.code_expired',
+  E009 = 'user.error.wrong_password',
+  E010 = 'user.error.wrong_username',
+  E011 = 'user.error.unverified_email',
 }

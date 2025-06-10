@@ -6,7 +6,9 @@ import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
 import { MailerService } from '@nestjs-modules/mailer'
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
+import * as bcrypt from 'bcrypt'
 import { Model } from 'mongoose'
 import RanDomNumber from 'src/helpers/otp-number'
 import { UpdateAuthDto } from './dto/update-auth.dto'
@@ -15,7 +17,8 @@ export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly userService: UsersService,
-    private readonly mailerService: MailerService
+    private readonly mailerService: MailerService,
+    private readonly jwtService: JwtService
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -37,16 +40,52 @@ export class AuthService {
       await this.sendEmailVerification(createUserDto.email, otp)
 
       // 6. Trả kết quả
-      return {
-        statusCode: 201,
-        message: RESPONSE_MESSAGES.USER_MESSAGE.CREATED_SUCCESS
-      }
+      return
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error // Ném lại lỗi đã được xử lý
       }
       console.error('Register error:', error)
       throw error
+    }
+  }
+
+  async login(username: string, password: string) {
+    // 1. Tìm người dùng theo email
+    const user = await this.userModel.findOne({ username }).exec()
+
+    if (!user) {
+      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+    }
+
+    // 2. Kiểm tra mật khẩu (giả sử đã hash khi tạo user)
+    const isPasswordMatching = await bcrypt.compare(password, user.password)
+    if (!isPasswordMatching) {
+      throw new ValidationException(ErrorCode.E009, RESPONSE_MESSAGES.USER_MESSAGE.WRONG_PASSWORD)
+    }
+
+    // 3. Kiểm tra nếu chưa xác thực email
+    if (!user.verified) {
+      throw new ValidationException(ErrorCode.E011, RESPONSE_MESSAGES.USER_MESSAGE.UNVERIFIED_EMAIL)
+    }
+
+    // 4. Tạo payload và JWT token
+    const payload = { sub: user._id, email: user.email, username: user.username }
+    const token = this.jwtService.sign(payload)
+
+    return {
+      access_token: token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        username: user.username,
+        dateOfBirth: user.dateOfBirth,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        gender: user.gender,
+        image: user.image
+      }
     }
   }
 
@@ -64,6 +103,17 @@ export class AuthService {
 
   remove(id: number) {
     return `This action removes a #${id} auth`
+  }
+
+  async resendVerificationEmail(email: string) {
+    try {
+      const OTP = RanDomNumber()
+      await this.sendEmailVerification(email, OTP)
+      await this.userService.updateOtp(email, OTP)
+    } catch (error) {
+      console.error('Error resending verification email:', error)
+      throw new BadRequestException('Failed to resend verification email', error)
+    }
   }
 
   /**
@@ -96,15 +146,16 @@ export class AuthService {
    * @param email - Email người dùng
    * @param otpCode - Mã OTP được nhập
    */
-  async authenOtpCodeWithEmail(email: string, otpCode: number) {
+  async authenOtpCodeWithEmail(otp: number, email: string) {
     try {
+      console.log('Authenticating OTP code for email:', email, 'with code:', otp)
       // 1. Tìm người dùng theo email
       const user = await this.userModel.findOne({ email }).exec()
       if (!user) {
         throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
       }
       // 2. Kiểm tra mã OTP và thời gian hết hạn
-      if (user.codeId !== otpCode || !user.codeExpired || user.codeExpired < new Date()) {
+      if (user.codeId !== otp || !user.codeExpired || user.codeExpired < new Date()) {
         throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.CODE_EXPIRED)
       }
 

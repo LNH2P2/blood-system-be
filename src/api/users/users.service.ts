@@ -13,6 +13,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { Address } from './schemas/address.entity'
 import { User, UserDocument } from './schemas/user.entity'
 import { IsCreatedBy } from './user-type/enum/user.enum'
+import RanDomNumber from 'src/helpers/otp-number'
 @Injectable()
 export class UsersService {
   constructor(
@@ -168,6 +169,40 @@ export class UsersService {
 
       console.error('Error updating user:', error)
       throw new InternalServerErrorException('Error updating user')
+    }
+  }
+
+  async updateOtp(email: string, otp: number) {
+    try {
+      // Kiểm tra xem email có hợp lệ không
+      if (!email) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_NOT_EXISTED)
+      }
+
+      // Tìm người dùng theo email
+      const user = await this.userModel.findOne({ email })
+
+      // Nếu không tìm thấy người dùng, ném lỗi
+      if (!user) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      // Cập nhật mã OTP và thời gian hết hạn
+      const codeId = otp
+      const codeExpired = new Date(Date.now() + 5 * 60 * 1000) // Hết hạn sau 5 phút
+
+      user.codeId = codeId
+      user.codeExpired = codeExpired
+
+      await user.save()
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      console.error('Error updating OTP:', error)
+      throw new InternalServerErrorException('Error updating OTP')
     }
   }
 
