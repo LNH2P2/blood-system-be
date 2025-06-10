@@ -25,7 +25,9 @@
       "@common/*": ["./src/common/*"],
       "@exceptions/*": ["./src/exceptions/*"],
       "@filters/*": ["./src/filters/*"],
-      "@constant/*": ["./src/constants/*"]
+      "@interceptors/*": ["./src/interceptors/*"],
+      "@decorators/*": ["./src/decorators/*"],
+      "@constants/*": ["./src/constants/*"]
     }
   }
 }

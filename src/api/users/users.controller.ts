@@ -1,5 +1,5 @@
 import { PaginationQueryDto } from '@common/dto/pagination/pagination.query.dto'
-import { USER_MESSAGE } from '@constant/message'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
@@ -10,6 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
+import { ResponseMessage } from '@decorators/response-message.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
 @Controller('users')
@@ -21,9 +22,10 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'User created successfully',
-    example: ResponseOnlyMessage(201, USER_MESSAGE.CREATED_SUCCESS)
+    example: ResponseOnlyMessage(201, RESPONSE_MESSAGES.USER_MESSAGE.CREATED_SUCCESS)
   })
   @ApiBody({ type: CreateUserDto })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.CREATED_SUCCESS)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto)
   }
@@ -57,7 +59,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
-    example: ResponseOnlyMessage(200, USER_MESSAGE.UPDATED_SUCCESS)
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
   })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -68,7 +70,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User delete successfully',
-    example: ResponseOnlyMessage(200, USER_MESSAGE.DELETE_SUCCESS)
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETE_SUCCESS)
   })
   @Delete(':id')
   remove(@Param('id') id: string) {
@@ -81,7 +83,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'Address added successfully',
-    example: ResponseOnlyMessage(201, USER_MESSAGE.CTEATED_ADDRESS_SUCCESS)
+    example: ResponseOnlyMessage(201, RESPONSE_MESSAGES.USER_MESSAGE.CTEATED_ADDRESS_SUCCESS)
   })
   createAddress(@Param('id') id: string, @Body() createAddressDto: CreateAddressDto) {
     return this.usersService.createAddress(id, createAddressDto)
@@ -93,7 +95,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Address updated successfully',
-    example: ResponseOnlyMessage(200, USER_MESSAGE.UPDATED_ADDRESS_SUCCESS)
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_ADDRESS_SUCCESS)
   })
   updateAddress(
     @Param('id') id: string,
@@ -108,7 +110,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Address deleted successfully',
-    example: ResponseOnlyMessage(200, USER_MESSAGE.DELETED_ADDRESS_SUCCESS)
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETED_ADDRESS_SUCCESS)
   })
   removeAddress(@Param('id') id: string, @Param('addressId') addressId: string) {
     return this.usersService.removeAddress(id, addressId)

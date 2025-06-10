@@ -1,8 +1,8 @@
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { User, UserDocument } from '@api/users/schemas/user.entity'
 import { UsersService } from '@api/users/users.service'
-import { ErrorCode } from '@constant/error-code.constant'
-import { USER_MESSAGE } from '@constant/message'
+import { ErrorCode } from '@constants/error-code.constant'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
 import { MailerService } from '@nestjs-modules/mailer'
 import { BadRequestException, Injectable } from '@nestjs/common'
@@ -10,7 +10,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import RanDomNumber from 'src/helpers/otp-number'
 import { UpdateAuthDto } from './dto/update-auth.dto'
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,7 +39,7 @@ export class AuthService {
       // 6. Trả kết quả
       return {
         statusCode: 201,
-        message: USER_MESSAGE.CREATED_SUCCESS
+        message: RESPONSE_MESSAGES.USER_MESSAGE.CREATED_SUCCESS
       }
     } catch (error) {
       if (error instanceof ValidationException) {
@@ -102,11 +101,11 @@ export class AuthService {
       // 1. Tìm người dùng theo email
       const user = await this.userModel.findOne({ email }).exec()
       if (!user) {
-        throw new ValidationException(ErrorCode.E007, USER_MESSAGE.NOT_FOUND)
+        throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
       }
       // 2. Kiểm tra mã OTP và thời gian hết hạn
       if (user.codeId !== otpCode || !user.codeExpired || user.codeExpired < new Date()) {
-        throw new ValidationException(ErrorCode.E008, USER_MESSAGE.CODE_EXPIRED)
+        throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.CODE_EXPIRED)
       }
 
       await this.userService.update(user._id.toString(), {

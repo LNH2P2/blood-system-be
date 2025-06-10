@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@constant/app.constant'
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@constants/app.constant'
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsInt, IsOptional, Min } from 'class-validator'

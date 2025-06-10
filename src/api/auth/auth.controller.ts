@@ -1,11 +1,10 @@
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant';
+import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { CreateAuthDto } from './dto/create-auth.dto'
-import { UpdateAuthDto } from './dto/update-auth.dto'
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
-import { USER_MESSAGE } from '@constant/message'
-import { CreateUserDto } from '@api/users/dto/create-user.dto'
+import { AuthService } from './auth.service'
+import { UpdateAuthDto } from './dto/update-auth.dto'
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +15,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User register successfully',
-    example: ResponseOnlyMessage(201, USER_MESSAGE.CREATED_SUCCESS)
+    example: ResponseOnlyMessage(201, RESPONSE_MESSAGES.USER_MESSAGE.CREATED_SUCCESS)
   })
   @ApiBody({ type: CreateUserDto })
   create(@Body() createUserDto: CreateUserDto) {
@@ -48,7 +47,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User OTP verified successfully',
-    example: ResponseOnlyMessage(200, USER_MESSAGE.VERIFY_SUCCESS)
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.VERIFY_SUCCESS)
   })
   authenticate(@Param('otp') otp: number, @Param('email') email: string) {
     return this.authService.authenOtpCodeWithEmail(email, otp)

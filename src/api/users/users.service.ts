@@ -1,5 +1,5 @@
 import { FindAllResult } from '@common/dto/pagination/pagination.list.dto'
-import { USER_MESSAGE } from '@constant/message'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidateObjectId, ValidationException } from '@exceptions/validattion.exception'
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
@@ -73,10 +73,7 @@ export class UsersService {
 
       await createdUser.save()
 
-      return {
-        statusCode: 201,
-        message: USER_MESSAGE.CREATED_SUCCESS
-      }
+      return
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
@@ -109,7 +106,7 @@ export class UsersService {
       .exec()
 
     const response: FindAllResult<User> = {
-      message: USER_MESSAGE.GET_ALL_SUCCESS,
+      message: RESPONSE_MESSAGES.USER_MESSAGE.GET_ALL_SUCCESS,
       data: {
         meta: {
           current: currentPage,
@@ -148,7 +145,7 @@ export class UsersService {
       await checkUserWithId(id, this.userModel)
 
       if (updateUserDto.password) {
-        throw new ValidationException(ErrorCode.E005, USER_MESSAGE.CAN_NOT_CHANGE_PASSWORD)
+        throw new ValidationException(ErrorCode.E005, RESPONSE_MESSAGES.USER_MESSAGE.CAN_NOT_CHANGE_PASSWORD)
       }
 
       if (updateUserDto.email || updateUserDto.username || updateUserDto.phoneNumber) {
@@ -162,7 +159,7 @@ export class UsersService {
 
       await this.userModel.findByIdAndUpdate(id, { $set: updateUserDto }, { new: true, runValidators: true })
 
-      return ResponseOnlyMessage(200, USER_MESSAGE.UPDATED_SUCCESS)
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
     } catch (error) {
       // Kiểm tra nếu lỗi là ValidationException
       if (error instanceof ValidationException) {
@@ -179,7 +176,7 @@ export class UsersService {
       ValidateObjectId(id)
       await checkUserWithId(id, this.userModel)
       await this.userModel.findByIdAndDelete(id)
-      return ResponseOnlyMessage(200, USER_MESSAGE.DELETE_SUCCESS)
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETE_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
@@ -225,7 +222,7 @@ export class UsersService {
         },
         { new: true }
       )
-      return ResponseOnlyMessage(200, USER_MESSAGE.UPDATED_ADDRESS_SUCCESS)
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_ADDRESS_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
@@ -244,7 +241,7 @@ export class UsersService {
       await checkUserWithId(id, this.userModel)
 
       await this.userModel.findByIdAndUpdate(id, { $pull: { address: { _id: addressId } } }, { new: true })
-      return ResponseOnlyMessage(200, USER_MESSAGE.DELETED_ADDRESS_SUCCESS)
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETED_ADDRESS_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
@@ -270,15 +267,15 @@ export async function validateUniqueUserFields(
 
   if (existingUser) {
     if (existingUser.email === email) {
-      throw new ValidationException(ErrorCode.E001, USER_MESSAGE.EMAIL_EXISTED)
+      throw new ValidationException(ErrorCode.E001, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_EXISTED)
     }
 
     if (existingUser.username === username) {
-      throw new ValidationException(ErrorCode.E001, USER_MESSAGE.USERNAME_EXISTED)
+      throw new ValidationException(ErrorCode.E001, RESPONSE_MESSAGES.USER_MESSAGE.USERNAME_EXISTED)
     }
 
     if (existingUser.phoneNumber === phoneNumber) {
-      throw new ValidationException(ErrorCode.E002, USER_MESSAGE.PHONE_NUMBER_EXISTED)
+      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.PHONE_NUMBER_EXISTED)
     }
   }
 }
@@ -286,6 +283,6 @@ export async function validateUniqueUserFields(
 export async function checkUserWithId(id: string, userModel: Model<UserDocument>) {
   const user = await userModel.findById(id)
   if (!user) {
-    throw new ValidationException(ErrorCode.E002, USER_MESSAGE.NOT_FOUND)
+    throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
   }
 }

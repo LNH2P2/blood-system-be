@@ -13,12 +13,20 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { join } from 'path'
 import { AuthModule } from '@api/auth/auth.module'
 import { RefreshToken } from '@api/refresh-token/entities/refresh-token.entity'
+import { NotificationModule } from './api/notification/notification.module'
+import { BlogModule } from './api/blog/blog.module'
+import { DonationRequestModule } from '@api/donation-request/donation-request.module'
+
 @Module({
   imports: [
     CatModule,
     AuthModule,
     UsersModule,
     RefreshToken,
+    CatModule,
+    DonationRequestModule,
+    NotificationModule,
+    BlogModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
