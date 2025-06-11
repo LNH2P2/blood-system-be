@@ -17,6 +17,7 @@ import { MongooseConfigService } from '@database/mongoose-config.service'
 import { NotificationModule } from './api/notification/notification.module'
 import { BlogModule } from './api/blog/blog.module'
 import { DonationRequestModule } from '@api/donation-request/donation-request.module'
+import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
 
 @Module({
   imports: [
@@ -63,6 +64,12 @@ import { DonationRequestModule } from '@api/donation-request/donation-request.mo
     })
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: RestJwtAuthGuard
+    }
+  ]
 })
 export class AppModule {}

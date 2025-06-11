@@ -5,6 +5,7 @@ import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donat
 import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.dto'
 import { ResponseMessage } from '@decorators/response-message.decorator'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
+import { Public } from '@decorators/public.decorator'
 
 @Controller('donation-request')
 export class DonationRequestController {
@@ -17,6 +18,7 @@ export class DonationRequestController {
   }
 
   @Get()
+  @Public()
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
   findAll(@Query() listDonationReqDto: ListDonationReqDto) {
     return this.donationRequestService.findAll(listDonationReqDto)
