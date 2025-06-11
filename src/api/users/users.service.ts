@@ -13,7 +13,6 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { Address } from './schemas/address.entity'
 import { User, UserDocument } from './schemas/user.entity'
 import { IsCreatedBy } from './user-type/enum/user.enum'
-import RanDomNumber from 'src/helpers/otp-number'
 @Injectable()
 export class UsersService {
   constructor(
@@ -69,7 +68,7 @@ export class UsersService {
         isDeletedBy: null,
 
         // ✅ Refresh tokens (tạo mới nên là [])
-        refreshTokens: []
+        refreshTokenId: createUserDto.refreshTokenId
       })
 
       await createdUser.save()
@@ -160,7 +159,7 @@ export class UsersService {
 
       await this.userModel.findByIdAndUpdate(id, { $set: updateUserDto }, { new: true, runValidators: true })
 
-      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
+      return
     } catch (error) {
       // Kiểm tra nếu lỗi là ValidationException
       if (error instanceof ValidationException) {

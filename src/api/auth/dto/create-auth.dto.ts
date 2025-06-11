@@ -1,5 +1,6 @@
+import { EnumDeviceType } from '@api/refresh-token/types/enum'
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator'
 
 export class CreateAuthDto {
   @ApiProperty({ example: 'admin123' })
@@ -11,4 +12,9 @@ export class CreateAuthDto {
   @IsNotEmpty()
   @IsString()
   password: string
+
+  @ApiProperty({ example: EnumDeviceType.ANDROID })
+  @IsNotEmpty()
+  @IsEnum(EnumDeviceType)
+  deviceInfo: EnumDeviceType
 }

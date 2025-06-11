@@ -64,6 +64,7 @@ export const RESPONSE_MESSAGES = {
     RESEND_VERIFICATION_EMAIL_SUCCESS: 'Resend verification email successfully',
     LOGIN_SUCCESS: 'Login successfully',
     LOGOUT_SUCCESS: 'Logout successfully',
+    REFRESH_TOKEN_SUCCESS: 'Refresh token successfully',
     //error
     NOT_FOUND: 'User not found',
     EMAIL_EXISTED: 'Email already exists',
@@ -80,7 +81,9 @@ export const RESPONSE_MESSAGES = {
     WRONG_PASSWORD: 'Wrong password',
     WRONG_USERNAME: 'Wrong username',
     UNVERIFIED_EMAIL: 'Email is not verified',
-    USERNAME_OR_PASSWORD_IS_WRONG: 'Username or password is wrong'
+    USERNAME_OR_PASSWORD_IS_WRONG: 'Username or password is wrong',
+    TOKEN_NOT_FOUND: 'Token not found',
+    TOKEN_EXPIRED: 'Token expired'
   },
 
   ERROR_MESSAGE: {

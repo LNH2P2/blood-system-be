@@ -16,9 +16,11 @@ export function configSwagger(app: INestApplication) {
       {
         type: 'http',
         scheme: 'bearer',
-        bearerFormat: 'JWT'
+        bearerFormat: 'JWT',
+        in: 'header',
+        name: 'Authorization'
       },
-      'Authorization'
+      'access-token'
     )
     .build()
 

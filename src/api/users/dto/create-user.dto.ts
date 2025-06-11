@@ -15,6 +15,7 @@ import {
   ValidateNested
 } from 'class-validator'
 import { AccountType, Gender, IsCreatedBy, UserRole } from '../user-type/enum/user.enum'
+import { Types } from 'mongoose'
 
 class AddressDto {
   @ApiProperty({ example: '249 Nguyen Trai' })
@@ -127,6 +128,9 @@ export class CreateUserDto {
   @ApiProperty({ example: IsCreatedBy.self, enum: IsCreatedBy, required: true })
   @IsEnum(IsCreatedBy)
   isCreatedBy?: IsCreatedBy
+
+  @IsOptional()
+  refreshTokenId: Types.ObjectId
 
   @ApiProperty({
     example: {

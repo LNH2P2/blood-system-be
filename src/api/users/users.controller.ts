@@ -1,10 +1,10 @@
-import { RolesGuard } from '@api/auth/guard/auth.guard'
+import { RolesGuard } from '@api/auth/strategies/role.strategy'
 import { PaginationQueryDto } from '@common/dto/pagination/pagination.query.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ResponseMessage } from '@decorators/response-message.decorator'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
 import { CreateAddressDto } from './dto/create-address.dto'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -44,6 +44,8 @@ export class UsersController {
     return this.usersService.findAll(current, limit, qs || '')
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiOperation({ summary: 'Get a user by Id' })
   @Get(':id')
   @ApiResponse({
@@ -114,7 +116,7 @@ export class UsersController {
     description: 'Address deleted successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETED_ADDRESS_SUCCESS)
   })
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwtaccess'), RolesGuard)
   removeAddress(@Param('id') id: string, @Param('addressId') addressId: string) {
     return this.usersService.removeAddress(id, addressId)
   }
