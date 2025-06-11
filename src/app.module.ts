@@ -2,6 +2,7 @@ import { AuthModule } from '@api/auth/auth.module'
 import { CatModule } from '@api/cat/cat.module'
 import { DonationRequestModule } from '@api/donation-request/donation-request.module'
 import { RefreshToken } from '@api/refresh-token/entities/refresh-token.entity'
+import { RefreshTokenModule } from '@api/refresh-token/refresh-token.module'
 import { UsersModule } from '@api/users/users.module'
 import appConfig from '@config/app.config'
 import databaseConfig from '@database/config/database.config'
@@ -22,11 +23,11 @@ import { AppService } from './app.service'
     CatModule,
     AuthModule,
     UsersModule,
-    RefreshToken,
     CatModule,
     DonationRequestModule,
     NotificationModule,
     BlogModule,
+    RefreshTokenModule,
 
     ConfigModule.forRoot({
       isGlobal: true,

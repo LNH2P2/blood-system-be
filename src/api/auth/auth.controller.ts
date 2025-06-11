@@ -1,12 +1,11 @@
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ResponseMessage } from '@decorators/response-message.decorator'
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
 import { AuthService } from './auth.service'
 import { CreateAuthDto } from './dto/create-auth.dto'
-import { UpdateAuthDto } from './dto/update-auth.dto'
 import { VerifyOtpDto } from './dto/verify.dto'
 
 @Controller('auth')
@@ -26,6 +25,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'user Login' })
   @ApiResponse({
     status: 200,
@@ -35,22 +35,20 @@ export class AuthController {
   @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.LOGIN_SUCCESS)
   @ApiBody({ type: CreateAuthDto })
   login(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.login(createAuthDto.username, createAuthDto.password)
+    return this.authService.login(createAuthDto.username, createAuthDto.password, createAuthDto.deviceInfo)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id)
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto)
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id)
+  @Post('refresh-token/:refreshToken')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'user refresh token' })
+  @ApiResponse({
+    status: 200,
+    description: 'User refresh token successfully',
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.REFRESH_TOKEN_SUCCESS)
+  })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.LOGIN_SUCCESS)
+  refreshtoken(@Param('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken)
   }
 
   @Post('verify-otp')
