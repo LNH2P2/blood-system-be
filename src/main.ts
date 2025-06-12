@@ -31,7 +31,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter(configService))
   app.useGlobalInterceptors(new TransformInterceptor(reflector))
 
-  app.setGlobalPrefix(configService.get('app.apiPrefix', { infer: true }) ?? 'api/v1')
+  app.setGlobalPrefix(configService.get('app.apiPrefix', { infer: true }) ?? 'api')
 
   // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
 

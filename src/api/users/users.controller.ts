@@ -13,6 +13,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
+import { version } from 'mongoose'
 
 @ApiTags('users') // tag trùng với addTag ở trên
 @Controller('users')
