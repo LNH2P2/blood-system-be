@@ -15,12 +15,14 @@ export class DonationRequestService {
     return await this.donationMatchModel.create(createDonationRequestDto)
   }
 
-  async findAll(reqDto: ListDonationReqDto) {
+  async findAll(userId: string, reqDto: ListDonationReqDto) {
+    const filter = { userId: userId }
     return await PaginationUtil.paginate({
       model: this.donationMatchModel,
       pageOptions: reqDto,
       searchFields: [],
-      sortField: 'createdAt'
+      sortField: 'createdAt',
+      filter
     })
   }
 
