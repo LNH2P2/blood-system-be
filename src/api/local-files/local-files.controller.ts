@@ -20,24 +20,4 @@ export class LocalFilesController {
   ) {
     return await this.localFilesService.create({ file })
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.localFilesService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.localFilesService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateLocalFileDto: UpdateLocalFileDto) {
-  //   return this.localFilesService.update(+id, updateLocalFileDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.localFilesService.remove(+id);
-  // }
 }

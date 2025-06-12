@@ -1,20 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { LocalFilesController } from './local-files.controller';
-import { LocalFilesService } from './local-files.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { LocalFilesController } from './local-files.controller'
+import { LocalFilesService } from './local-files.service'
 
 describe('LocalFilesController', () => {
-  let controller: LocalFilesController;
+  let controller: LocalFilesController
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LocalFilesController],
-      providers: [LocalFilesService],
-    }).compile();
+      providers: [LocalFilesService]
+    }).compile()
 
-    controller = module.get<LocalFilesController>(LocalFilesController);
-  });
+    controller = module.get<LocalFilesController>(LocalFilesController)
+  })
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+    expect(controller).toBeDefined()
+  })
+})

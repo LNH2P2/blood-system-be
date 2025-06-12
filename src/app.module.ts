@@ -19,7 +19,7 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
-import { LocalFilesModule } from './api/local-files/local-files.module';
+import { LocalFilesModule } from './api/local-files/local-files.module'
 
 @Module({
   imports: [

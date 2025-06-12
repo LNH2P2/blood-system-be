@@ -25,20 +25,4 @@ export class LocalFilesService {
     )
     return `https://${this.configService.getOrThrow('AWS_S3_BUCKET')}.s3.${this.configService.getOrThrow('AWS_S3_REGION')}.amazonaws.com/${createLocalFileDto.file.originalname}`
   }
-
-  // findAll() {
-  //   return `This action returns all localFiles`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} localFile`;
-  // }
-
-  // update(id: number, updateLocalFileDto: UpdateLocalFileDto) {
-  //   return `This action updates a #${id} localFile`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} localFile`;
-  // }
 }
