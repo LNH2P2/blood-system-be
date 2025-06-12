@@ -46,7 +46,6 @@ export class UsersController {
   }
 
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwtaccess'))
   @ApiOperation({ summary: 'Get a user by Id' })
   @Get(':id')
   @ApiResponse({

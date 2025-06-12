@@ -15,11 +15,27 @@ export class RefreshTokenService {
   ) {}
   async create(createRefreshTokenDto: CreateRefreshTokenDto): Promise<RefreshTokenDocument> {
     try {
+      const { token, expiresAt, deviceInfo, user } = createRefreshTokenDto
+
+      // Kiểm tra xem user đã có token cho device này chưa
+      const existingToken = await this.refreshTokenModel.findOne({
+        user,
+        deviceInfo
+      })
+
+      if (existingToken) {
+        // Cập nhật token + thời hạn
+        existingToken.token = token
+        existingToken.expiresAt = expiresAt
+        return await existingToken.save()
+      }
+
+      // Tạo token mới
       const refreshToken = new this.refreshTokenModel({
-        token: createRefreshTokenDto.token,
-        expiresAt: createRefreshTokenDto.expiresAt,
-        deviceInfo: createRefreshTokenDto.deviceInfo,
-        user: createRefreshTokenDto.user
+        token,
+        expiresAt,
+        deviceInfo,
+        user
       })
 
       return await refreshToken.save()

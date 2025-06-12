@@ -15,6 +15,7 @@ import * as compression from 'compression'
 import { AllConfigType } from '@config/config.type'
 import { configSwagger } from '@config/openapi.config'
 import { TransformInterceptor } from '@interceptors/transform.interceptor'
+import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
