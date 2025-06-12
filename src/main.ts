@@ -15,6 +15,7 @@ import * as compression from 'compression'
 import { AllConfigType } from '@config/config.type'
 import { configSwagger } from '@config/openapi.config'
 import { TransformInterceptor } from '@interceptors/transform.interceptor'
+import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -31,7 +32,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter(configService))
   app.useGlobalInterceptors(new TransformInterceptor(reflector))
 
-  app.setGlobalPrefix(configService.get('app.apiPrefix', { infer: true }) ?? 'api/v1')
+  app.setGlobalPrefix(configService.get('app.apiPrefix', { infer: true }) ?? 'api')
 
   // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
 
