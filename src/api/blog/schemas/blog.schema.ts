@@ -13,6 +13,9 @@ export class Blog extends AbstractSchema {
   title: string
 
   @Prop()
+  image: string
+
+  @Prop()
   content: string
 
   @Prop()
