@@ -1,10 +1,10 @@
 // refresh-token.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { SchemaTypes, Types, HydratedDocument } from 'mongoose'
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
 
 export type RefreshTokenDocument = HydratedDocument<RefreshToken>
 
-@Schema({ timestamps: true, collection: 'refresh_tokens' })
+@Schema({ timestamps: true, collection: 'RefreshToken' })
 export class RefreshToken {
   @Prop({ required: true })
   token: string

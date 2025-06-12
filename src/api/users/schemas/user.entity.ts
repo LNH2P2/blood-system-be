@@ -45,8 +45,8 @@ export class User {
   accountType: string
 
   // Dùng reference đến RefreshToken
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'RefreshToken' }], default: [] })
-  refreshTokens: Types.ObjectId[]
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'RefreshToken' }], default: {} })
+  refreshTokenId: Types.ObjectId
 
   @Prop({ default: true })
   isActive: boolean

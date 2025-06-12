@@ -1,6 +1,9 @@
+import { RefreshTokenService } from '@api/refresh-token/refresh-token.service'
+import { EnumDeviceType } from '@api/refresh-token/types/enum'
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { User, UserDocument } from '@api/users/schemas/user.entity'
 import { UsersService } from '@api/users/users.service'
+import { jwtConstants } from '@constants/app.constant'
 import { ErrorCode } from '@constants/error-code.constant'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
@@ -9,16 +12,17 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
+import parseTimeStringToMs from 'src/helpers/getTimeByText'
 import RanDomNumber from 'src/helpers/otp-number'
-import { UpdateAuthDto } from './dto/update-auth.dto'
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly userService: UsersService,
     private readonly mailerService: MailerService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly refreshService: RefreshTokenService
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -50,7 +54,7 @@ export class AuthService {
     }
   }
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string, deviceInfo: string) {
     // 1. Tìm người dùng theo email
     const user = await this.userModel.findOne({ username }).exec()
 
@@ -71,39 +75,36 @@ export class AuthService {
 
     // 4. Tạo payload và JWT token
     const payload = { sub: user._id, email: user.email, username: user.username }
-    const token = this.jwtService.sign(payload)
+    const access_token = this.jwtService.sign(payload)
+
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: jwtConstants.secret_refresh,
+      expiresIn: jwtConstants.expired_refresh
+    })
+
+    const refreshTokenData = {
+      token: refresh_token,
+      expiresAt: new Date(Date.now() + parseTimeStringToMs(jwtConstants.expired_refresh)),
+      deviceInfo: deviceInfo as EnumDeviceType,
+      user: user._id
+    }
+    // 5. Tạo refresh token trong DB
+    const refresh = await this.refreshService.create(refreshTokenData)
+    // 6. Cập nhật user với refreshTokenId nếu muốn lưu liên kết
+    await this.userService.update(user._id.toString(), {
+      refreshTokenId: refresh._id as Types.ObjectId
+    })
 
     return {
-      access_token: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        username: user.username,
-        dateOfBirth: user.dateOfBirth,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        gender: user.gender,
-        image: user.image
-      }
+      access_token: access_token,
+      refresh_token: refresh_token
     }
   }
 
-  findAll() {
-    return `This action returns all auth`
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`
-  }
+  /**
+   * Resend verification email with OTP
+   * @param email - User's email address
+   */
 
   async resendVerificationEmail(email: string) {
     try {
@@ -170,6 +171,26 @@ export class AuthService {
       }
       console.error('Error authenticating OTP code:', error)
       throw new BadRequestException('Invalid OTP code or email', error)
+    }
+  }
+
+  async refreshToken(token: string) {
+    try {
+      // 1. Giải mã token để lấy thông tin người dùng
+      const payload = this.jwtService.verify(token, {
+        secret: jwtConstants.secret_refresh
+      })
+
+      // 2. Tìm refresh token trong DB
+      await this.refreshService.findByToken(token)
+
+      // 3. Tạo access token mới
+      const access_token = this.jwtService.sign({ sub: payload.sub, email: payload.email, username: payload.username })
+
+      return { access_token: access_token }
+    } catch (error) {
+      console.error('Refresh token error:', error)
+      throw new BadRequestException('Invalid refresh token', error)
     }
   }
 }

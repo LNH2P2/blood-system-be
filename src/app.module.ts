@@ -1,5 +1,6 @@
 import { AuthModule } from '@api/auth/auth.module'
 import { RefreshToken } from '@api/refresh-token/entities/refresh-token.entity'
+import { RefreshTokenModule } from '@api/refresh-token/refresh-token.module'
 import { UsersModule } from '@api/users/users.module'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
@@ -24,11 +25,11 @@ import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
     CatModule,
     AuthModule,
     UsersModule,
-    RefreshToken,
     CatModule,
     DonationRequestModule,
     NotificationModule,
     BlogModule,
+    RefreshTokenModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
