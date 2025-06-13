@@ -16,7 +16,7 @@ export class HospitalController {
   constructor(private readonly hospitalService: HospitalService) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new hospital (Admin only)' })
   @ApiResponse({
@@ -56,7 +56,7 @@ export class HospitalController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update hospital (Admin or Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
@@ -72,7 +72,7 @@ export class HospitalController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
@@ -86,7 +86,7 @@ export class HospitalController {
   }
 
   @Put(':id/approve')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Approve hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
@@ -101,7 +101,7 @@ export class HospitalController {
   }
 
   @Put(':id/reject')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Reject hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
@@ -128,7 +128,7 @@ export class HospitalController {
   }
 
   @Put(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
@@ -148,7 +148,7 @@ export class HospitalController {
   }
 
   @Post(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
