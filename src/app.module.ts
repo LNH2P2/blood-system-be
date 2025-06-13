@@ -1,9 +1,9 @@
 import { AuthModule } from '@api/auth/auth.module'
 import { CatModule } from '@api/cat/cat.module'
 import { DonationRequestModule } from '@api/donation-request/donation-request.module'
-import { RefreshToken } from '@api/refresh-token/entities/refresh-token.entity'
 import { RefreshTokenModule } from '@api/refresh-token/refresh-token.module'
 import { UsersModule } from '@api/users/users.module'
+import { HospitalModule } from '@api/hospital/hospital.module'
 import appConfig from '@config/app.config'
 import databaseConfig from '@database/config/database.config'
 import { MongooseConfigService } from '@database/mongoose-config.service'
@@ -31,6 +31,7 @@ import { LocalFilesModule } from './api/local-files/local-files.module'
     NotificationModule,
     BlogModule,
     RefreshTokenModule,
+    HospitalModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
