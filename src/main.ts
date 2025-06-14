@@ -59,6 +59,6 @@ async function bootstrap() {
   // Swagger
   configSwagger(app)
 
-  await app.listen(process.env.APP_PORT ?? 3000)
+  await app.listen(process.env.APP_PORT ?? 3000, '0.0.0.0')
 }
 bootstrap().catch((err) => console.error('Failed to start server:', err))
