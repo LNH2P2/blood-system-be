@@ -26,11 +26,13 @@ export class HospitalQueryDto {
 
   @ApiPropertyOptional({ enum: BloodType, description: 'Filter by available blood type' })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(BloodType)
   bloodType?: BloodType
 
   @ApiPropertyOptional({ enum: BloodComponent, description: 'Filter by blood component' })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(BloodComponent)
   component?: BloodComponent
 
