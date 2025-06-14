@@ -1,5 +1,4 @@
 import { AuthModule } from '@api/auth/auth.module'
-import { RefreshToken } from '@api/refresh-token/entities/refresh-token.entity'
 import { RefreshTokenModule } from '@api/refresh-token/refresh-token.module'
 import { UsersModule } from '@api/users/users.module'
 import { MailerModule } from '@nestjs-modules/mailer'
@@ -18,7 +17,10 @@ import { MongooseConfigService } from '@database/mongoose-config.service'
 import { NotificationModule } from './api/notification/notification.module'
 import { BlogModule } from './api/blog/blog.module'
 import { DonationRequestModule } from '@api/donation-request/donation-request.module'
-import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
+// import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
+import { APP_GUARD } from '@nestjs/core'
+import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
+import { LocalFilesModule } from './api/local-files/local-files.module'
 
 @Module({
   imports: [
@@ -62,14 +64,15 @@ import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
         preview: configService.get<string>('PREVIEW_EMAIL') === 'true' ? true : false
       }),
       inject: [ConfigService]
-    })
+    }),
+    LocalFilesModule
   ],
   controllers: [AppController],
   providers: [
     AppService,
     {
-      provide: 'APP_GUARD',
-      useClass: RestJwtAuthGuard
+      provide: APP_GUARD,
+      useClass: JwtAccessAuthGuard
     }
   ]
 })

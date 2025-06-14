@@ -12,7 +12,7 @@ export class RefreshToken {
   @Prop({ type: Date, required: true })
   expiresAt: Date
 
-  @Prop()
+  @Prop({ unique: true })
   deviceInfo: string
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })

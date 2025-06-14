@@ -1,4 +1,4 @@
-import { IS_PUBLIC } from '@constants/app.constant'
+// public.decorator.ts
 import { SetMetadata } from '@nestjs/common'
-
-export const Public = () => SetMetadata(IS_PUBLIC, true)
+export const IS_PUBLIC_KEY = 'isPublic'
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)

@@ -1,5 +1,6 @@
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
+import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
 import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
@@ -13,6 +14,7 @@ import { Public } from '@decorators/public.decorator'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   @Public()
   @ApiOperation({ summary: 'user register' })
@@ -26,6 +28,7 @@ export class AuthController {
     return this.authService.register(createUserDto)
   }
 
+  @Public()
   @Post('login')
   @Public()
   @HttpCode(200)
@@ -41,6 +44,7 @@ export class AuthController {
     return this.authService.login(createAuthDto.username, createAuthDto.password, createAuthDto.deviceInfo)
   }
 
+  @Public()
   @Post('refresh-token/:refreshToken')
   @HttpCode(200)
   @ApiOperation({ summary: 'user refresh token' })
@@ -54,6 +58,7 @@ export class AuthController {
     return this.authService.refreshToken(refreshToken)
   }
 
+  @Public()
   @Post('verify-otp')
   @Public()
   @ApiOperation({ summary: 'verify OTP' })
@@ -67,6 +72,7 @@ export class AuthController {
     return this.authService.authenOtpCodeWithEmail(verifyOtpDto.otp, verifyOtpDto.email)
   }
 
+  @Public()
   @Post('resend-otp/:email')
   @Public()
   @ApiOperation({ summary: 'resend OTP' })
