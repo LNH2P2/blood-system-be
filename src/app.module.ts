@@ -20,6 +20,7 @@ import { AppService } from './app.service'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 import { LocalFilesModule } from './api/local-files/local-files.module'
+import { CategoryModule } from './api/category/category.module';
 
 @Module({
   imports: [
@@ -64,7 +65,8 @@ import { LocalFilesModule } from './api/local-files/local-files.module'
       }),
       inject: [ConfigService]
     }),
-    LocalFilesModule
+    LocalFilesModule,
+    CategoryModule
   ],
   controllers: [AppController],
   providers: [
