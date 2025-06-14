@@ -7,7 +7,6 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
-  IsDateString,
   ValidateNested,
   Min,
   Max,
@@ -58,8 +57,7 @@ export class BloodInventoryItemDto {
   @Min(0)
   quantity: number
 
-  @ApiProperty({ description: 'Expiration date (ISO string)' })
-  @IsDateString()
+  @ApiProperty({ description: 'Expiration date' })
   @Transform(({ value }) => new Date(value))
   expiresAt: Date
 }
@@ -135,9 +133,8 @@ export class CreateHospitalDto {
   @IsString()
   licenseNumber?: string
 
-  @ApiPropertyOptional({ description: 'Established date (ISO string)' })
+  @ApiPropertyOptional({ description: 'Established date' })
   @IsOptional()
-  @IsDateString()
   @Transform(({ value }) => new Date(value))
   establishedDate?: Date
 
