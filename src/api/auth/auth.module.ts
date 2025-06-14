@@ -4,6 +4,8 @@ import { jwtConstants } from '@constants/app.constant'
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import { MongooseModule } from '@nestjs/mongoose'
+import { User, UserSchema } from '@api/users/schemas/user.entity'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy'
@@ -14,6 +16,7 @@ import { JwtAccessStrategy } from './strategies/jwt-access.strategy'
   imports: [
     UsersModule,
     RefreshTokenModule,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret_access,
