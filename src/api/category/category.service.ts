@@ -15,4 +15,8 @@ export class CategoryService {
   findAll() {
     return `This action returns all category`
   }
+
+  findOne(id: string) {
+    return this.categoryModel.findById(id)
+  }
 }

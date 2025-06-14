@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { BlogStatus } from '../blog.constants'
+import { Category } from '@api/category/schemas/category.schema'
 
 export class CreateBlogDto {
   @ApiProperty({
@@ -25,6 +26,12 @@ export class CreateBlogDto {
     example: 'This is the content of my first blog'
   })
   content: string
+
+  @ApiProperty({
+    description: 'The category of the blog',
+    example: 'Name of the category'
+  })
+  category: Category
 
   @ApiProperty({
     description: 'The status of the blog',
