@@ -24,7 +24,6 @@ export class HospitalService {
 
   async create(createHospitalDto: CreateHospitalDto, currentUser: CurrentUser): Promise<Hospital> {
     try {
-      // Only admin can create hospitals
       if (currentUser.role !== UserRole.Admin) {
         throw new ForbiddenException('Only administrators can create hospitals')
       }
@@ -35,7 +34,6 @@ export class HospitalService {
         district: createHospitalDto.district,
         isDeleted: false
       })
-
       if (existingHospital) {
         throw new BadRequestException('Hospital with this name already exists in the district')
       }
@@ -246,64 +244,6 @@ export class HospitalService {
         }
       }
     )
-  }
-
-  async approve(id: string, currentUser: CurrentUser): Promise<Hospital> {
-    ValidateObjectId(id)
-
-    if (currentUser.role !== UserRole.Admin) {
-      throw new ForbiddenException('Only administrators can approve hospitals')
-    }
-
-    const hospital = await this.hospitalModel
-      .findOneAndUpdate(
-        { _id: id, isDeleted: false },
-        {
-          status: HospitalStatus.APPROVED,
-          updatedAtBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
-        },
-        { new: true, runValidators: true }
-      )
-      .lean()
-      .exec()
-
-    if (!hospital) {
-      throw new NotFoundException('Hospital not found')
-    }
-
-    return hospital
-  }
-
-  async reject(id: string, currentUser: CurrentUser): Promise<Hospital> {
-    ValidateObjectId(id)
-
-    if (currentUser.role !== UserRole.Admin) {
-      throw new ForbiddenException('Only administrators can reject hospitals')
-    }
-
-    const hospital = await this.hospitalModel
-      .findOneAndUpdate(
-        { _id: id, isDeleted: false },
-        {
-          status: HospitalStatus.REJECTED,
-          updatedAtBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
-        },
-        { new: true, runValidators: true }
-      )
-      .lean()
-      .exec()
-
-    if (!hospital) {
-      throw new NotFoundException('Hospital not found')
-    }
-
-    return hospital
   }
 
   async updateBloodInventory(

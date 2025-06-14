@@ -85,36 +85,6 @@ export class HospitalController {
     return this.hospitalService.remove(id, req.user)
   }
 
-  @Put(':id/approve')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Approve hospital (Admin only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Hospital approved successfully',
-    type: Hospital
-  })
-  @ResponseMessage('Hospital approved successfully')
-  approve(@Param('id') id: string, @Request() req) {
-    return this.hospitalService.approve(id, req.user)
-  }
-
-  @Put(':id/reject')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Reject hospital (Admin only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Hospital rejected successfully',
-    type: Hospital
-  })
-  @ResponseMessage('Hospital rejected successfully')
-  reject(@Param('id') id: string, @Request() req) {
-    return this.hospitalService.reject(id, req.user)
-  }
-
   @Get(':id/blood-inventory')
   @Public()
   @ApiOperation({ summary: 'Get hospital blood inventory' })
