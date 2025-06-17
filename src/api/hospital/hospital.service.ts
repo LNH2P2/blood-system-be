@@ -7,11 +7,12 @@ import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { HospitalStatus } from '../../constants/hospital.constant'
-import { FindAllResult } from '../../common/dto/pagination/pagination.list.dto'
 import { ValidateObjectId } from '../../exceptions/validattion.exception'
 import { UserRole } from '../users/user-type/enum/user.enum'
 import { CurrentUser } from './interfaces/current-user.interface'
 import { BloodInventoryItem } from './interfaces/hospital.interface'
+import { PaginationUtil } from '../../utils/pagination.util'
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
 @Injectable()
 export class HospitalService {
@@ -67,84 +68,62 @@ export class HospitalService {
     }
   }
 
-  async findAll(query: HospitalQueryDto, currentUser?: CurrentUser): Promise<FindAllResult<Hospital>> {
-    try {
-      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', ...filters } = query
+  async findAll(query: HospitalQueryDto, currentUser?: CurrentUser) {
+    const { search, province, district, ward, status, isActive, bloodType, component, ...reqDto } = query
 
-      // Build filter conditions
-      const conditions: Record<string, unknown> = { isDeleted: false }
+    // Build filter conditions
+    const filter: Record<string, unknown> = { isDeleted: false }
 
-      // Public users can only see approved and active hospitals
-      if (!currentUser || currentUser.role !== UserRole.Admin) {
-        conditions.status = HospitalStatus.APPROVED
-        conditions.isActive = true
-      }
+    // Public users can only see ACTIVE and active hospitals
+    // if (!currentUser || currentUser.role !== UserRole.Admin) {
+    //   filter.status = HospitalStatus.ACTIVE
+    //   filter.isActive = true
+    // }
 
-      // Apply filters
-      if (filters.search) {
-        conditions.$text = { $search: filters.search }
-      }
-
-      if (filters.province) {
-        conditions.province = { $regex: filters.province, $options: 'i' }
-      }
-
-      if (filters.district) {
-        conditions.district = { $regex: filters.district, $options: 'i' }
-      }
-
-      if (filters.ward) {
-        conditions.ward = { $regex: filters.ward, $options: 'i' }
-      }
-
-      if (filters.status && currentUser?.role === UserRole.Admin) {
-        conditions.status = filters.status
-      }
-
-      if (filters.isActive !== undefined) {
-        conditions.isActive = filters.isActive
-      }
-
-      // Blood inventory filters
-      if (filters.bloodType || filters.component) {
-        const bloodConditions: Record<string, unknown> = {}
-        if (filters.bloodType) {
-          bloodConditions['bloodInventory.bloodType'] = filters.bloodType
-        }
-        if (filters.component) {
-          bloodConditions['bloodInventory.component'] = filters.component
-        }
-        Object.assign(conditions, bloodConditions)
-      }
-
-      // Sorting
-      const sort: Record<string, 1 | -1> = {}
-      sort[sortBy] = sortOrder === 'asc' ? 1 : -1
-
-      // Execute query with pagination
-      const skip = (page - 1) * limit
-      const [hospitals, totalItems] = await Promise.all([
-        this.hospitalModel.find(conditions).sort(sort).skip(skip).limit(limit).lean().exec(),
-        this.hospitalModel.countDocuments(conditions)
-      ])
-
-      const totalPages = Math.ceil(totalItems / limit)
-
-      return {
-        message: 'Hospitals retrieved successfully',
-        data: {
-          meta: {
-            current: page,
-            limit: limit,
-            pages: totalPages,
-            total: totalItems
-          },
-          result: hospitals
-        }
-      }
-    } catch {
-      throw new BadRequestException('Failed to fetch hospitals')
+    // Apply filters
+    if (province) {
+      filter.province = { $regex: province, $options: 'i' }
     }
+
+    if (district) {
+      filter.district = { $regex: district, $options: 'i' }
+    }
+
+    if (ward) {
+      filter.ward = { $regex: ward, $options: 'i' }
+    }
+
+    if (status && currentUser?.role === UserRole.Admin) {
+      filter.status = status
+    }
+
+    if (isActive !== undefined) {
+      filter.isActive = isActive
+    }
+
+    // Blood inventory filters
+    if (bloodType) {
+      filter['bloodInventory.bloodType'] = bloodType
+    }
+
+    if (component) {
+      filter['bloodInventory.component'] = component
+    }
+
+    // Set search query if provided
+    if (search) {
+      reqDto.q = search
+    }
+
+    const searchFields = ['name', 'address', 'province', 'district', 'ward']
+
+    return await PaginationUtil.paginate({
+      model: this.hospitalModel,
+      pageOptions: reqDto as PageOptionsDto,
+      searchFields,
+      sortField: 'createdAt',
+      filter
+    })
   }
 
   async findOne(id: string, currentUser?: CurrentUser): Promise<Hospital> {
@@ -152,9 +131,9 @@ export class HospitalService {
 
     const conditions: Record<string, unknown> = { _id: id, isDeleted: false }
 
-    // Public users can only see approved and active hospitals
+    // Public users can only see ACTIVE and active hospitals
     if (!currentUser || currentUser.role !== UserRole.Admin) {
-      conditions.status = HospitalStatus.APPROVED
+      conditions.status = HospitalStatus.ACTIVE
       conditions.isActive = true
     }
 
