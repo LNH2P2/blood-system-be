@@ -126,18 +126,20 @@ export class AuthController {
     description: 'Resend OTP verified successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.RESEND_VERIFICATION_EMAIL_SUCCESS)
   })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.RESEND_VERIFICATION_EMAIL_SUCCESS)
   resendOtp(@Param('email') email: string) {
     return this.authService.resendVerificationEmail(email)
   }
 
   @Public()
-  @Post('send-otp-forgot-password/:email')
+  @Post('send-otp-reset-password/:email')
   @ApiOperation({ summary: 'send otp OTP' })
   @ApiResponse({
     status: 200,
     description: 'User OTP to reset successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.SEND_OTP_SUCCESS)
   })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.SEND_OTP_SUCCESS)
   sendOtpResetPassword(@Param('email') email: string) {
     return this.authService.sendOtpForgotPassword(email)
   }

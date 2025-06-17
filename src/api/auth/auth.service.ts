@@ -15,7 +15,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
 import { Model, Types } from 'mongoose'
 import parseTimeStringToMs from 'src/helpers/getTimeByText'
-import HashPassword from 'src/helpers/hash-password'
 import RanDomNumber from 'src/helpers/otp-number'
 @Injectable()
 export class AuthService {
@@ -165,15 +164,8 @@ export class AuthService {
         throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.CODE_EXPIRED)
       }
 
-      // 3. Hash mật khẩu mới
-      const hashedPassword = await HashPassword(newPassword)
-
       // 4. Cập nhật mật khẩu + xóa OTP
-      await this.userService.update(user._id.toString(), {
-        password: hashedPassword,
-        codeId: undefined,
-        codeExpired: undefined
-      })
+      await this.userService.updatePassword(user._id.toString(), newPassword)
 
       return
     } catch (error) {
