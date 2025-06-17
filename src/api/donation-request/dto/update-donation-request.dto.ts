@@ -1,4 +1,20 @@
-import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
-import { PartialType } from '@nestjs/swagger'
+import { Hospital } from './../../hospital/schemas/hospital.schema'
+import { ApiProperty, PartialType } from '@nestjs/swagger'
+import { IsDate, IsNotEmpty, IsString } from 'class-validator'
 
-export class UpdateDonationRequestDto extends PartialType(CreateDonationRequestDto) {}
+export class UpdateDonationRequestDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  hospitalId: string
+
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  scheduleDate: Date
+}

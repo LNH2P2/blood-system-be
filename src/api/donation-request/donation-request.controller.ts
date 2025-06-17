@@ -35,7 +35,7 @@ export class DonationRequestController {
   findAll(@Query() listDonationReqDto: ListDonationReqDto, @Req() req: any) {
     // console.log('req.user', req.user)
     // TODO: get userId from req.user
-    return this.donationRequestService.findAll('REQ-20250603-003', listDonationReqDto)
+    return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
   }
 
   @Get(':id')
@@ -47,7 +47,14 @@ export class DonationRequestController {
   @Patch(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
-    return this.donationRequestService.update(+id, updateDonationRequestDto)
+    return this.donationRequestService.update(updateDonationRequestDto)
+  }
+
+  @Get('debug/hospitals')
+  @Public()
+  @ApiOperation({ summary: 'Debug: List hospitals' })
+  listHospitals() {
+    return this.donationRequestService.listHospitals()
   }
 
   @Delete(':id')

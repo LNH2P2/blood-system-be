@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { DonationRequestStatus } from 'src/constants/donation.constant'
 
 export class CreateDonationRequestDto {
@@ -16,13 +16,12 @@ export class CreateDonationRequestDto {
   @IsEnum(DonationRequestStatus)
   @IsOptional()
   status: DonationRequestStatus = DonationRequestStatus.SCHEDULED
-
   @ApiProperty({
-    example: 'MED-20250603-001'
+    example: '6850cfd1effc21cd19654cd4'
   })
-  @IsString()
+  @IsMongoId()
   @IsNotEmpty()
-  medicalFacilityId: string
+  hospitalId: string
 
   @ApiProperty({
     example: '2025-10-01T10:00:00Z'
