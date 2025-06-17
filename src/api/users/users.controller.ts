@@ -14,6 +14,7 @@ import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
 import { version } from 'mongoose'
+import { Public } from '@decorators/public.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
 @Controller({ path: 'users', version: '1' }) // ⬅️ Gắn version 1
@@ -46,6 +47,8 @@ export class UsersController {
   }
 
   @ApiBearerAuth('access-token')
+  // @UseGuards(AuthGuard('jwtaccess'))
+  @Public()
   @ApiOperation({ summary: 'Get a user by Id' })
   @Get(':id')
   @ApiResponse({
@@ -60,6 +63,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Update a user by Id' })
   @ApiBody({ type: UpdateUserDto })
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
@@ -96,6 +100,7 @@ export class UsersController {
   @Patch(':id/addresses/:addressId')
   @ApiOperation({ summary: 'Update address for user by addressId' })
   @ApiBody({ type: UpdateAddressDto })
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'Address updated successfully',

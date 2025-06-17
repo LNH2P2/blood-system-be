@@ -8,7 +8,7 @@ export type DonationRequestDocument = HydratedDocument<DonationRequest>
 @Schema({ timestamps: true, collection: 'donation_requests' })
 export class DonationRequest extends AbstractSchema {
   @Prop({ required: true })
-  requestId: string
+  userId: string
 
   @Prop({ required: true, enum: DonationRequestStatus })
   status: DonationRequestStatus

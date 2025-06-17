@@ -2,8 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { BlogService } from './blog.service'
 import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
+import { Public } from '@decorators/public.decorator'
 
 @Controller('blog')
+@Public() //TODO: Remove this decorator -- it's for testing purposes
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
