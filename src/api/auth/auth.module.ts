@@ -9,10 +9,11 @@ import { User, UserSchema } from '@api/users/schemas/user.entity'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy'
+import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessStrategy],
+  providers: [AuthService, JwtAccessStrategy, JwtAccessAuthGuard],
   imports: [
     UsersModule,
     RefreshTokenModule,

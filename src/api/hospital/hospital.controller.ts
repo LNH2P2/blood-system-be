@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, Put } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, Put, Req } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
 import { AuthGuard } from '@nestjs/passport'
 import { ResponseMessage } from '../../decorators/response-message.decorator'
@@ -16,8 +16,9 @@ export class HospitalController {
   constructor(private readonly hospitalService: HospitalService) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwtaccess'))
+  // @UseGuards(AuthGuard('jwtaccess'))
   @ApiBearerAuth('access-token')
+  // @Public()
   @ApiOperation({ summary: 'Create a new hospital (Admin only)' })
   @ApiResponse({
     status: 201,
@@ -26,7 +27,7 @@ export class HospitalController {
   })
   @ApiBody({ type: CreateHospitalDto })
   @ResponseMessage('Hospital created successfully')
-  create(@Body() createHospitalDto: CreateHospitalDto, @Request() req) {
+  create(@Body() createHospitalDto: CreateHospitalDto, @Req() req) {
     return this.hospitalService.create(createHospitalDto, req.user)
   }
 

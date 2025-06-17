@@ -15,6 +15,12 @@ export class CreateBlogDto {
   image: string
 
   @ApiProperty({
+    description: 'The summary of the blog',
+    example: 'This is the summary of my first blog'
+  })
+  summary: string
+
+  @ApiProperty({
     description: 'The content of the blog',
     example: 'This is the content of my first blog'
   })
