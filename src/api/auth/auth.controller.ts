@@ -8,6 +8,7 @@ import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
 import { AuthService } from './auth.service'
 import { CreateAuthDto } from './dto/create-auth.dto'
 import { VerifyOtpDto } from './dto/verify.dto'
+// import { Public } from '@decorators/public.decorator'
 
 @Controller('auth')
 export class AuthController {
@@ -15,6 +16,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Public()
   @ApiOperation({ summary: 'user register' })
   @ApiResponse({
     status: 201,
@@ -28,6 +30,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Public()
   @HttpCode(200)
   @ApiOperation({ summary: 'user Login' })
   @ApiResponse({
@@ -57,6 +60,7 @@ export class AuthController {
 
   @Public()
   @Post('verify-otp')
+  @Public()
   @ApiOperation({ summary: 'verify OTP' })
   @ApiResponse({
     status: 200,
@@ -70,6 +74,7 @@ export class AuthController {
 
   @Public()
   @Post('resend-otp/:email')
+  @Public()
   @ApiOperation({ summary: 'resend OTP' })
   @ApiResponse({
     status: 200,
