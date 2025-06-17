@@ -1,7 +1,6 @@
 export enum HospitalStatus {
   PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  ACTIVE = 'active',
   SUSPENDED = 'suspended'
 }
 
