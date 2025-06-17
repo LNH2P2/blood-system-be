@@ -171,6 +171,31 @@ export class UsersService {
     }
   }
 
+  async updatePassword(id: string, newPassword: string) {
+    try {
+      ValidateObjectId(id)
+      await checkUserWithId(id, this.userModel)
+
+      // Kiểm tra xem mật khẩu mới có hợp lệ không
+      if (!newPassword) {
+        throw new ValidationException(ErrorCode.E001, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_USERNAME_PASSWORD_IS_NULL)
+      }
+
+      // Mã hóa mật khẩu mới
+      const passwordHash = await HashPassword(newPassword)
+
+      // Cập nhật mật khẩu
+      await this.userModel.findByIdAndUpdate(id, { password: passwordHash }, { new: true, runValidators: true })
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      console.error('Error updating password:', error)
+      throw new InternalServerErrorException('Error updating password')
+    }
+  }
   async updateOtp(email: string, otp: number) {
     try {
       // Kiểm tra xem email có hợp lệ không
