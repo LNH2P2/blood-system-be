@@ -6,7 +6,8 @@ import { HospitalStatus } from '../../../constants/hospital.constant'
 export class UpdateHospitalDto extends PartialType(CreateHospitalDto) {
   @ApiPropertyOptional({
     enum: HospitalStatus,
-    description: 'Hospital verification status'
+    description: 'Hospital verification status',
+    example: HospitalStatus.ACTIVE
   })
   @IsOptional()
   @IsEnum(HospitalStatus)
