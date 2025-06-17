@@ -1,11 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
-import {
-  HospitalStatus,
-  BloodType,
-  BloodComponent,
-  DEFAULT_OPERATING_HOURS
-} from '../../../constants/hospital.constant'
+import { BloodType, BloodComponent, DEFAULT_OPERATING_HOURS } from '../../../constants/hospital.constant'
 import { AbstractSchema } from '@database/schemas/abstract.schema'
 
 export type HospitalDocument = HydratedDocument<Hospital>
@@ -91,13 +86,6 @@ export class Hospital extends AbstractSchema {
 
   @Prop({ default: true })
   isActive: boolean
-
-  @Prop({
-    enum: Object.values(HospitalStatus),
-    type: String,
-    default: HospitalStatus.ACTIVE
-  })
-  status: HospitalStatus
 
   @Prop()
   licenseNumber?: string

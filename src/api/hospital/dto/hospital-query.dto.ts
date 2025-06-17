@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsEnum, IsBoolean } from 'class-validator'
 import { Transform } from 'class-transformer'
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { BloodType, BloodComponent, HospitalStatus } from '../../../constants/hospital.constant'
+import { BloodType, BloodComponent } from '../../../constants/hospital.constant'
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
 export class HospitalQueryDto extends PageOptionsDto {
@@ -44,14 +44,6 @@ export class HospitalQueryDto extends PageOptionsDto {
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(BloodComponent)
   component?: BloodComponent
-
-  @ApiPropertyOptional({
-    enum: HospitalStatus,
-    description: 'Filter by status (admin only)'
-  })
-  @IsOptional()
-  @IsEnum(HospitalStatus)
-  status?: HospitalStatus
 
   @ApiPropertyOptional({ description: 'Filter by active status', example: true })
   @IsOptional()
