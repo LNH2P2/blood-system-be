@@ -3,10 +3,16 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { User, UserDocument } from '../../users/schemas/user.entity'
 
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwtaccess') {
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -14,11 +20,20 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwtaccess') {
     })
   }
 
-  async validate(payload: any) {
+  async validate(payload: { sub: string; email: string; username: string }) {
+    // Fetch complete user information from database
+    const user = await this.userModel.findById(payload.sub).lean().exec()
+
+    if (!user) {
+      return null
+    }
+
     return {
-      userId: payload.sub,
-      email: payload.email,
-      username: payload.username
+      _id: user._id.toString(),
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role
     }
   }
 }
