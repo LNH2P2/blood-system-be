@@ -9,6 +9,7 @@ import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { Hospital } from './schemas/hospital.schema'
 import { Public } from '../../decorators/public.decorator'
 import { UpdateBloodInventoryDto, AddBloodInventoryDto } from './dto/blood-inventory.dto'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 
 @ApiTags('hospitals')
 @Controller('hospitals')
@@ -16,9 +17,7 @@ export class HospitalController {
   constructor(private readonly hospitalService: HospitalService) {}
 
   @Post()
-  // @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
-  // @Public()
+  @Public()
   @ApiOperation({ summary: 'Create a new hospital (Admin only)' })
   @ApiResponse({
     status: 201,
@@ -26,7 +25,7 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: CreateHospitalDto })
-  @ResponseMessage('Hospital created successfully')
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.CREATED)
   create(@Body() createHospitalDto: CreateHospitalDto, @Req() req) {
     return this.hospitalService.create(createHospitalDto, req.user)
   }
@@ -57,8 +56,7 @@ export class HospitalController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Update hospital (Admin or Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -67,21 +65,20 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: UpdateHospitalDto })
-  @ResponseMessage('Hospital updated successfully')
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.UPDATED)
   update(@Param('id') id: string, @Body() updateHospitalDto: UpdateHospitalDto, @Request() req) {
     return this.hospitalService.update(id, updateHospitalDto, req.user)
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Delete hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
     status: 200,
     description: 'Hospital deleted successfully'
   })
-  @ResponseMessage('Hospital deleted successfully')
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.DELETED)
   remove(@Param('id') id: string, @Request() req) {
     return this.hospitalService.remove(id, req.user)
   }
@@ -99,8 +96,7 @@ export class HospitalController {
   }
 
   @Put(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -109,7 +105,7 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: UpdateBloodInventoryDto })
-  @ResponseMessage('Blood inventory updated successfully')
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
   updateBloodInventory(
     @Param('id') id: string,
     @Body() updateBloodInventoryDto: UpdateBloodInventoryDto,
@@ -119,8 +115,7 @@ export class HospitalController {
   }
 
   @Post(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -129,7 +124,7 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: AddBloodInventoryDto })
-  @ResponseMessage('Blood inventory item added successfully')
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
   addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto, @Request() req) {
     return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item, req.user)
   }
