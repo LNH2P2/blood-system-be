@@ -24,9 +24,9 @@ export class HospitalService {
 
   async create(createHospitalDto: CreateHospitalDto, currentUser: CurrentUser): Promise<Hospital> {
     try {
-      if (currentUser.role !== UserRole.Admin) {
-        throw new ForbiddenException('Only administrators can create hospitals')
-      }
+      // if (currentUser.role !== UserRole.Admin) {
+      //   throw new ForbiddenException('Only administrators can create hospitals')
+      // }
 
       // Check for duplicate hospital name in same district
       const existingHospital = await this.hospitalModel.findOne({
