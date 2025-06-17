@@ -50,12 +50,12 @@ export class DonationRequestService {
     return this.donationMatchModel.findById(id).populate('hospitalId')
   }
 
-  update(payload: UpdateDonationRequestDto) {
-    return this.donationMatchModel.findByIdAndUpdate(payload.id, payload, { new: true }).populate('hospitalId')
+  update(id: string, payload: UpdateDonationRequestDto) {
+    return this.donationMatchModel.findByIdAndUpdate(id, payload, { new: true }).populate('hospitalId')
   }
 
-  remove(id: number) {
-    return `This action removes a  donationMatch`
+  remove(id: string) {
+    return this.donationMatchModel.findByIdAndDelete(id)
   }
 
   // Debug method to list hospitals

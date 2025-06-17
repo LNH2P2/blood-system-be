@@ -9,11 +9,11 @@ import { Public } from '@decorators/public.decorator'
 import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
 
 @Controller('donation-requests')
+@Public()
 export class DonationRequestController {
   constructor(private readonly donationRequestService: DonationRequestService) {}
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create donation request' })
   @ApiOkResponse({
     description: 'Donation request created successfully'
@@ -25,7 +25,6 @@ export class DonationRequestController {
   }
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get list donation request of user ' })
   @ApiOkResponse({
     description: 'Get list donation request successfully'
@@ -47,11 +46,10 @@ export class DonationRequestController {
   @Patch(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
-    return this.donationRequestService.update(updateDonationRequestDto)
+    return this.donationRequestService.update(id, updateDonationRequestDto)
   }
 
   @Get('debug/hospitals')
-  @Public()
   @ApiOperation({ summary: 'Debug: List hospitals' })
   listHospitals() {
     return this.donationRequestService.listHospitals()
@@ -60,6 +58,6 @@ export class DonationRequestController {
   @Delete(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.DELETED)
   remove(@Param('id') id: string) {
-    return this.donationRequestService.remove(+id)
+    return this.donationRequestService.remove(id)
   }
 }
