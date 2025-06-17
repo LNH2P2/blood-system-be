@@ -6,6 +6,7 @@ import {
   BloodComponent,
   DEFAULT_OPERATING_HOURS
 } from '../../../constants/hospital.constant'
+import { AbstractSchema } from '@database/schemas/abstract.schema'
 
 export type HospitalDocument = HydratedDocument<Hospital>
 
@@ -51,7 +52,7 @@ export class BloodInventoryItem {
 }
 
 @Schema({ timestamps: true, collection: 'hospitals' })
-export class Hospital {
+export class Hospital extends AbstractSchema {
   @Prop({ required: true })
   name: string
 
@@ -94,7 +95,7 @@ export class Hospital {
   @Prop({
     enum: Object.values(HospitalStatus),
     type: String,
-    default: HospitalStatus.PENDING
+    default: HospitalStatus.ACTIVE
   })
   status: HospitalStatus
 
