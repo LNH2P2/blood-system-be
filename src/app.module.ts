@@ -1,6 +1,7 @@
 import { AuthModule } from '@api/auth/auth.module'
 import { RefreshTokenModule } from '@api/refresh-token/refresh-token.module'
 import { UsersModule } from '@api/users/users.module'
+import { HospitalModule } from '@api/hospital/hospital.module'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import { Module } from '@nestjs/common'
@@ -21,6 +22,7 @@ import { DonationRequestModule } from '@api/donation-request/donation-request.mo
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 import { LocalFilesModule } from './api/local-files/local-files.module'
+import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { LocalFilesModule } from './api/local-files/local-files.module'
     NotificationModule,
     BlogModule,
     RefreshTokenModule,
+    HospitalModule,
 
     ConfigModule.forRoot({
       isGlobal: true,

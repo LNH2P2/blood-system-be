@@ -8,7 +8,7 @@ import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
 import { AuthService } from './auth.service'
 import { CreateAuthDto } from './dto/create-auth.dto'
 import { VerifyOtpDto } from './dto/verify.dto'
-import { Public } from '@decorators/public.decorator'
+// import { Public } from '@decorators/public.decorator'
 
 @Controller('auth')
 export class AuthController {
