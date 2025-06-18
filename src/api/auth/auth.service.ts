@@ -9,7 +9,7 @@ import { ErrorCode } from '@constants/error-code.constant'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
 import { MailerService } from '@nestjs-modules/mailer'
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
@@ -18,6 +18,7 @@ import parseTimeStringToMs from 'src/helpers/getTimeByText'
 import RanDomNumber from 'src/helpers/otp-number'
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
@@ -238,8 +239,11 @@ export class AuthService {
           otp_code: OTP
         }
       })
+      this.logger.log(`Verification email sent to ${email}`)
     } catch (error) {
-      throw new BadRequestException('Invalid email format', error)
+      this.logger.warn(`Failed to send verification email to ${email}: ${error?.message}`)
+      // Không throw nữa nếu bạn không muốn hiện màu đỏ
+      // Nếu cần throw (ví dụ cho Controller biết), hãy throw CustomException không gây ERROR trong console
     }
   }
 
