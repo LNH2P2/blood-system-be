@@ -171,29 +171,67 @@ export class UsersService {
     }
   }
 
+  async updatePassword(id: string, newPassword: string) {
+    try {
+      ValidateObjectId(id)
+      await checkUserWithId(id, this.userModel)
+
+      // Kiểm tra xem mật khẩu mới có hợp lệ không
+      if (!newPassword) {
+        throw new ValidationException(ErrorCode.E001, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_USERNAME_PASSWORD_IS_NULL)
+      }
+
+      // Mã hóa mật khẩu mới
+      const passwordHash = await HashPassword(newPassword)
+
+      // Cập nhật mật khẩu
+
+      return await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            password: passwordHash,
+            codeId: undefined,
+            codeExpired: undefined
+          }
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      console.error('Error updating password:', error)
+      throw new InternalServerErrorException('Error updating password')
+    }
+  }
   async updateOtp(email: string, otp: number) {
     try {
-      // Kiểm tra xem email có hợp lệ không
       if (!email) {
         throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_NOT_EXISTED)
       }
 
-      // Tìm người dùng theo email
-      const user = await this.userModel.findOne({ email })
+      const user = await this.userModel.findOne({ email }).exec()
 
-      // Nếu không tìm thấy người dùng, ném lỗi
       if (!user) {
         throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
       }
 
-      // Cập nhật mã OTP và thời gian hết hạn
       const codeId = otp
       const codeExpired = new Date(Date.now() + 5 * 60 * 1000) // Hết hạn sau 5 phút
 
-      user.codeId = codeId
-      user.codeExpired = codeExpired
-
-      await user.save()
+      await this.userModel.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            codeId,
+            codeExpired
+          }
+        }
+      )
 
       return
     } catch (error) {

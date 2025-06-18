@@ -24,5 +24,8 @@ export enum ErrorCode {
   E010 = 'user.error.wrong_username',
   E011 = 'user.error.unverified_email',
   E012 = 'user.error.token_not_found',
-  E013 = 'user.error.token_expired'
+  E013 = 'user.error.token_expired',
+  E014 = 'user.error.refresh_token_not_found',
+  E015 = 'user.error.refresh_token_expired',
+  E016 = 'user.error.password_not_match'
 }

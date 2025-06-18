@@ -59,12 +59,14 @@ export const RESPONSE_MESSAGES = {
     GET_ALL_SUCCESS: 'Get all users successfully',
     GET_SUCCESS: 'Get user successfully',
     UPADTE_PASSWORD: 'Update password successfully',
+    RESET_PASSWORD: 'Reset password successfully',
     DELETE_SUCCESS: 'User deleted successfully',
     VERIFY_SUCCESS: 'Email verified successfully',
     RESEND_VERIFICATION_EMAIL_SUCCESS: 'Resend verification email successfully',
     LOGIN_SUCCESS: 'Login successfully',
     LOGOUT_SUCCESS: 'Logout successfully',
     REFRESH_TOKEN_SUCCESS: 'Refresh token successfully',
+    SEND_OTP_SUCCESS: 'Send OTP successfully',
     //error
     NOT_FOUND: 'User not found',
     EMAIL_EXISTED: 'Email already exists',
@@ -83,7 +85,9 @@ export const RESPONSE_MESSAGES = {
     UNVERIFIED_EMAIL: 'Email is not verified',
     USERNAME_OR_PASSWORD_IS_WRONG: 'Username or password is wrong',
     TOKEN_NOT_FOUND: 'Token not found',
-    TOKEN_EXPIRED: 'Token expired'
+    TOKEN_EXPIRED: 'Token expired',
+    INVALID_REFRESH_TOKEN: 'Invalid refresh token',
+    CONFIRM_PASSWORD_NOT_MATCH: 'Confirm password does not match'
   },
 
   ERROR_MESSAGE: {

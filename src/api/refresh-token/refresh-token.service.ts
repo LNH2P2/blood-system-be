@@ -1,9 +1,9 @@
 import { ErrorCode } from '@constants/error-code.constant'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { CreateRefreshTokenDto } from './dto/create-refresh-token.dto'
 import { RefreshToken, RefreshTokenDocument } from './entities/refresh-token.entity'
 
@@ -62,6 +62,25 @@ export class RefreshTokenService {
       }
       console.error('Error finding refresh token:', error)
       throw new Error('Failed to find refresh token')
+    }
+  }
+
+  async deleteRefreshToken(tokenId: Types.ObjectId): Promise<void> {
+    try {
+      const result = await this.refreshTokenModel.deleteOne({ _id: tokenId }).exec()
+
+      if (result.deletedCount === 0) {
+        throw new ValidationException(ErrorCode.E014, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_NOT_FOUND)
+      }
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error // Re-throw known error
+      }
+
+      console.error('Error deleting refresh token:', error)
+      throw new InternalServerErrorException('Failed to delete refresh token')
     }
   }
 }

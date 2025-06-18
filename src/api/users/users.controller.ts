@@ -17,7 +17,7 @@ import { version } from 'mongoose'
 import { Public } from '@decorators/public.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
-@Controller('users')
+@Controller({ path: 'users', version: '1' }) // ⬅️ Gắn version 1
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
