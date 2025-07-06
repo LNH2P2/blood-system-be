@@ -45,6 +45,7 @@ export class UsersService {
         gender: createUserDto.gender,
         dateOfBirth: createUserDto.dateOfBirth,
         address: [createUserDto.address],
+        bloodTypeId: createUserDto.bloodTypeId || null,
 
         // ✅ Tài khoản
         role: createUserDto.role,
