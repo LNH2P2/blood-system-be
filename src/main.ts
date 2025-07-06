@@ -1,21 +1,19 @@
-import { NestFactory, Reflector } from '@nestjs/core'
-import { AppModule } from './app.module'
+import { AllConfigType } from '@config/config.type'
+import { configSwagger } from '@config/openapi.config'
+import { GlobalExceptionFilter } from '@filters/global-exception.filter'
+import { TransformInterceptor } from '@interceptors/transform.interceptor'
 import {
-  ClassSerializerInterceptor,
   HttpStatus,
   UnprocessableEntityException,
   ValidationPipe,
   VersioningType
 } from '@nestjs/common'
-import { ValidationError } from 'class-validator'
 import { ConfigService } from '@nestjs/config'
-import { GlobalExceptionFilter } from '@filters/global-exception.filter'
-import helmet from 'helmet'
+import { NestFactory, Reflector } from '@nestjs/core'
+import { ValidationError } from 'class-validator'
 import * as compression from 'compression'
-import { AllConfigType } from '@config/config.type'
-import { configSwagger } from '@config/openapi.config'
-import { TransformInterceptor } from '@interceptors/transform.interceptor'
-import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
+import helmet from 'helmet'
+import { AppModule } from './app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -39,7 +37,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
-      whitelist: false,
+      whitelist: true,
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         return new UnprocessableEntityException(validationErrors)
@@ -52,7 +50,7 @@ async function bootstrap() {
   })
 
   app.enableCors({
-    origin: '*',
+    origin: process.env.APP_FONT_END_URL?.split(',') ?? '*',
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true
   })
