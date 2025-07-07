@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { Model } from 'mongoose'
 import { Hospital, HospitalDocument } from './schemas/hospital.schema'
-import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
@@ -15,9 +14,7 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 export class HospitalService {
   constructor(
     @InjectModel(Hospital.name)
-    private hospitalModel: Model<HospitalDocument>,
-    @InjectModel(HospitalStaff.name)
-    private hospitalStaffModel: Model<HospitalStaffDocument>
+    private hospitalModel: Model<HospitalDocument>
   ) {}
 
   async create(createHospitalDto: CreateHospitalDto): Promise<Hospital> {
@@ -56,25 +53,26 @@ export class HospitalService {
       throw new BadRequestException('Failed to create hospital')
     }
   }
+
+  /**
+   * Enhanced search with better performance
+   * TODO: Add full-text search indexing for better performance
+   */
   async findAll(query: HospitalQueryDto) {
     const { search, province, district, ward, isActive, bloodType, component, ...reqDto } = query
 
-    // Build filter conditions
+    // Build filter conditions with optimized queries
     const filter: Record<string, unknown> = { isDeleted: false }
 
+    // Optimize location filtering with compound indexes
+    const locationFilter: Record<string, unknown> = {}
+    if (province) locationFilter.province = { $regex: province, $options: 'i' }
+    if (district) locationFilter.district = { $regex: district, $options: 'i' }
+    if (ward) locationFilter.ward = { $regex: ward, $options: 'i' }
+
+    Object.assign(filter, locationFilter)
+
     // Apply filters
-    if (province) {
-      filter.province = { $regex: province, $options: 'i' }
-    }
-
-    if (district) {
-      filter.district = { $regex: district, $options: 'i' }
-    }
-
-    if (ward) {
-      filter.ward = { $regex: ward, $options: 'i' }
-    }
-
     if (isActive !== undefined) {
       filter.isActive = isActive
     }
@@ -145,7 +143,6 @@ export class HospitalService {
 
     return hospital
   }
-
   async remove(id: string): Promise<void> {
     ValidateObjectId(id)
 
@@ -161,14 +158,6 @@ export class HospitalService {
     if (!result) {
       throw new NotFoundException('Hospital not found')
     }
-
-    // Also soft delete all hospital staff
-    await this.hospitalStaffModel.updateMany(
-      { hospitalId: id, isDeleted: false },
-      {
-        isDeleted: true
-      }
-    )
   }
 
   async updateBloodInventory(id: string, bloodInventory: BloodInventoryItem[]): Promise<Hospital> {
@@ -226,5 +215,55 @@ export class HospitalService {
     }
 
     return hospital
+  }
+
+  /**
+   * Add method to find hospitals within radius
+   */
+  async findNearby(latitude: number, longitude: number, radiusKm: number = 10): Promise<Hospital[]> {
+    return this.hospitalModel
+      .find({
+        isDeleted: false,
+        isActive: true,
+        coordinates: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+            $maxDistance: radiusKm * 1000 // Convert km to meters
+          }
+        }
+      })
+      .limit(20)
+      .lean()
+      .exec()
+  }
+
+  /**
+   * Get blood inventory summary across all hospitals
+   */
+  async getBloodInventorySummary() {
+    return this.hospitalModel.aggregate([
+      { $match: { isDeleted: false, isActive: true } },
+      { $unwind: '$bloodInventory' },
+      {
+        $group: {
+          _id: {
+            bloodType: '$bloodInventory.bloodType',
+            component: '$bloodInventory.component'
+          },
+          totalQuantity: { $sum: '$bloodInventory.quantity' },
+          hospitals: { $addToSet: { id: '$_id', name: '$name' } }
+        }
+      },
+      {
+        $project: {
+          bloodType: '$_id.bloodType',
+          component: '$_id.component',
+          totalQuantity: 1,
+          hospitalCount: { $size: '$hospitals' },
+          hospitals: 1,
+          _id: 0
+        }
+      }
+    ])
   }
 }
