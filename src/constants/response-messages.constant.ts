@@ -1,4 +1,5 @@
-export const RESPONSE_MESSAGES = {  // Hospital Messages
+export const RESPONSE_MESSAGES = {
+  // Hospital Messages
   HOSPITAL: {
     CREATED: 'Hospital created successfully',
     UPDATED: 'Hospital updated successfully',
