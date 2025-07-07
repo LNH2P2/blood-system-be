@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { Hospital, HospitalDocument } from './schemas/hospital.schema'
 import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
@@ -107,9 +107,7 @@ export class HospitalService {
     ValidateObjectId(id)
 
     const conditions: Record<string, unknown> = { _id: id, isDeleted: false }
-
-    const hospital = await this.hospitalModel.findOne(conditions).lean().exec()
-
+    const hospital = await this.hospitalModel.findOne(conditions)
     if (!hospital) {
       throw new NotFoundException('Hospital not found')
     }
@@ -185,8 +183,8 @@ export class HospitalService {
     }
 
     const hospital = await this.hospitalModel
-      .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+      .findByIdAndUpdate(
+        id,
         {
           bloodInventory
         },
