@@ -14,8 +14,8 @@ import {
   MinLength,
   ValidateNested
 } from 'class-validator'
-import { AccountType, Gender, IsCreatedBy, UserRole } from '../user-type/enum/user.enum'
 import { Types } from 'mongoose'
+import { AccountType, Gender, IsCreatedBy, UserRole } from '../user-type/enum/user.enum'
 
 class AddressDto {
   @ApiProperty({ example: '249 Nguyen Trai' })
@@ -117,6 +117,11 @@ export class CreateUserDto {
   @Type(() => AddressDto)
   address: AddressDto
 
+  @ApiProperty({ example: 'jlkr2t453gjdlskajgdiosarj32', required: false })
+  @IsOptional()
+  @IsString()
+  bloodTypeId?: string
+
   @ApiProperty({ example: UserRole.Member, enum: UserRole, required: true })
   @IsEnum(UserRole)
   role?: UserRole
@@ -139,7 +144,7 @@ export class CreateUserDto {
     },
     required: true
   })
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreatedByDto)
   createdBy: CreatedByDto
