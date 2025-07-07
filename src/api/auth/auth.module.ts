@@ -17,7 +17,6 @@ import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
   imports: [
     UsersModule,
     RefreshTokenModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret_access,
