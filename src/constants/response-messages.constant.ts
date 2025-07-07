@@ -1,5 +1,4 @@
-export const RESPONSE_MESSAGES = {
-  // Hospital Messages
+export const RESPONSE_MESSAGES = {  // Hospital Messages
   HOSPITAL: {
     CREATED: 'Hospital created successfully',
     UPDATED: 'Hospital updated successfully',
@@ -9,7 +8,12 @@ export const RESPONSE_MESSAGES = {
     ACTIVATED: 'Hospital activated successfully',
     DEACTIVATED: 'Hospital deactivated successfully',
     ADD_BLOOD: 'Blood inventory updated successfully',
-    REMOVE_BLOOD: 'Blood removed from inventory successfully'
+    UPDATE_BLOOD_INVENTORY: 'Blood inventory updated successfully',
+    ADD_BLOOD_INVENTORY: 'Blood inventory item added successfully',
+    REMOVE_BLOOD: 'Blood removed from inventory successfully',
+    BLOOD_INVENTORY_FOUND: 'Blood inventory retrieved successfully',
+    NEARBY_HOSPITALS: 'Nearby hospitals retrieved successfully',
+    BLOOD_SUMMARY: 'Blood inventory summary retrieved successfully'
   },
   // Donation Request Messages
   DONATION_REQUEST: {
