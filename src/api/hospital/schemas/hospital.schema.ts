@@ -135,8 +135,11 @@ export class Hospital extends AbstractSchema {
 
 export const HospitalSchema = SchemaFactory.createForClass(Hospital)
 
-// Index for search optimization
+// Optimize indexes for better query performance
 HospitalSchema.index({ name: 'text', address: 'text', description: 'text' })
 HospitalSchema.index({ province: 1, district: 1, ward: 1 })
 HospitalSchema.index({ 'coordinates.latitude': 1, 'coordinates.longitude': 1 })
+HospitalSchema.index({ coordinates: '2dsphere' }) // For geospatial queries
 HospitalSchema.index({ isActive: 1, isDeleted: 1 })
+HospitalSchema.index({ 'bloodInventory.bloodType': 1, 'bloodInventory.component': 1 })
+HospitalSchema.index({ 'bloodInventory.expiresAt': 1 }) // For expiration tracking
