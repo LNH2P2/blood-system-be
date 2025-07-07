@@ -16,9 +16,4 @@ export enum BloodComponent {
   PLASMA = 'plasma'
 }
 
-export enum HospitalStaffRole {
-  ADMIN = 'admin',
-  STAFF = 'staff'
-}
-
 export const DEFAULT_OPERATING_HOURS = '07:00 - 17:00'
