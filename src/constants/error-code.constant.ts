@@ -27,5 +27,9 @@ export enum ErrorCode {
   E013 = 'user.error.token_expired',
 
   // Hospital
-  H001 = 'hospital.error.not_found'
+  H001 = 'hospital.error.not_found',
+  E014 = 'user.error.refresh_token_not_found',
+  E015 = 'user.error.refresh_token_expired',
+  E016 = 'user.error.password_not_match',
+  E017 = 'user.error.address_not_found'
 }

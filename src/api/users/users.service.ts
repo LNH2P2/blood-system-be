@@ -45,6 +45,7 @@ export class UsersService {
         gender: createUserDto.gender,
         dateOfBirth: createUserDto.dateOfBirth,
         address: [createUserDto.address],
+        bloodTypeId: createUserDto.bloodTypeId || null,
 
         // ✅ Tài khoản
         role: createUserDto.role,
@@ -139,8 +140,14 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, req?) {
     try {
+      const user = req as {
+        _id: string
+        email: string
+        username: string
+        role: string
+      }
       ValidateObjectId(id)
       await checkUserWithId(id, this.userModel)
 
@@ -155,6 +162,12 @@ export class UsersService {
           updateUserDto.username ?? '',
           updateUserDto.phoneNumber ?? ''
         )
+      }
+      if (user) {
+        updateUserDto.updatedAtBy = {
+          _id: user._id,
+          email: user.email
+        }
       }
 
       await this.userModel.findByIdAndUpdate(id, { $set: updateUserDto }, { new: true, runValidators: true })
@@ -171,29 +184,67 @@ export class UsersService {
     }
   }
 
+  async updatePassword(id: string, newPassword: string) {
+    try {
+      ValidateObjectId(id)
+      await checkUserWithId(id, this.userModel)
+
+      // Kiểm tra xem mật khẩu mới có hợp lệ không
+      if (!newPassword) {
+        throw new ValidationException(ErrorCode.E001, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_USERNAME_PASSWORD_IS_NULL)
+      }
+
+      // Mã hóa mật khẩu mới
+      const passwordHash = await HashPassword(newPassword)
+
+      // Cập nhật mật khẩu
+
+      return await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            password: passwordHash,
+            codeId: undefined,
+            codeExpired: undefined
+          }
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      console.error('Error updating password:', error)
+      throw new InternalServerErrorException('Error updating password')
+    }
+  }
   async updateOtp(email: string, otp: number) {
     try {
-      // Kiểm tra xem email có hợp lệ không
       if (!email) {
         throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_NOT_EXISTED)
       }
 
-      // Tìm người dùng theo email
-      const user = await this.userModel.findOne({ email })
+      const user = await this.userModel.findOne({ email }).exec()
 
-      // Nếu không tìm thấy người dùng, ném lỗi
       if (!user) {
         throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
       }
 
-      // Cập nhật mã OTP và thời gian hết hạn
       const codeId = otp
       const codeExpired = new Date(Date.now() + 5 * 60 * 1000) // Hết hạn sau 5 phút
 
-      user.codeId = codeId
-      user.codeExpired = codeExpired
-
-      await user.save()
+      await this.userModel.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            codeId,
+            codeExpired
+          }
+        }
+      )
 
       return
     } catch (error) {
@@ -205,16 +256,39 @@ export class UsersService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, req) {
     try {
+      const user = req.user as {
+        _id: string
+        email: string
+        username: string
+        role: string
+      }
+
       ValidateObjectId(id)
       await checkUserWithId(id, this.userModel)
-      await this.userModel.findByIdAndDelete(id)
+
+      await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            isDeleted: true,
+            isDeletedBy: {
+              _id: user._id,
+              email: user.email
+            },
+            updatedAt: new Date()
+          }
+        },
+        { new: true }
+      )
+
       return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETE_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
       }
+
       console.error('Error deleting user:', error)
       throw new InternalServerErrorException('Error deleting user')
     }
@@ -237,30 +311,55 @@ export class UsersService {
     }
   }
 
-  async updateAddress(id: string, addressId: string, updatedData: Partial<Address>) {
+  async updateAddress(id: string, addressId: string, updatedData: Partial<Address>, req) {
     try {
-      // Validate userId và addressId hợp lệ
+      const user = req as {
+        _id: string
+        email: string
+        username: string
+        role: string
+      }
+
+      // Validate ID
       ValidateObjectId(id)
       ValidateObjectId(addressId)
 
+      // Check user tồn tại
       await checkUserWithId(id, this.userModel)
-      await this.userModel.findOneAndUpdate(
+
+      // Xây dựng object cập nhật linh hoạt
+      const updateFields: any = {}
+
+      if (updatedData.street !== undefined) updateFields['address.$.street'] = updatedData.street
+      if (updatedData.district !== undefined) updateFields['address.$.district'] = updatedData.district
+      if (updatedData.city !== undefined) updateFields['address.$.city'] = updatedData.city
+      if (updatedData.nation !== undefined) updateFields['address.$.nation'] = updatedData.nation
+
+      // Cập nhật thông tin người chỉnh sửa & thời gian cập nhật
+      updateFields['updatedAt'] = new Date()
+      updateFields['updatedAtBy'] = {
+        _id: user._id,
+        email: user.email
+      }
+
+      const updatedUser = await this.userModel.findOneAndUpdate(
         { _id: id, 'address._id': addressId },
         {
-          $set: {
-            'address.$.street': updatedData.street,
-            'address.$.district': updatedData.district,
-            'address.$.city': updatedData.city,
-            'address.$.nation': updatedData.nation
-          }
+          $set: updateFields
         },
         { new: true }
       )
+
+      if (!updatedUser) {
+        throw new ValidationException(ErrorCode.E017, RESPONSE_MESSAGES.USER_MESSAGE.ADDRESS_NOT_FOUND)
+      }
+
       return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_ADDRESS_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
       }
+
       console.error('Error updateAddress user:', error)
       throw new InternalServerErrorException('Error updateAddress user')
     }

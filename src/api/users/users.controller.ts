@@ -2,7 +2,7 @@ import { RolesGuard } from '@api/auth/strategies/role.strategy'
 import { PaginationQueryDto } from '@common/dto/pagination/pagination.query.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ResponseMessage } from '@decorators/response-message.decorator'
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
@@ -13,11 +13,9 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
-import { version } from 'mongoose'
-import { Public } from '@decorators/public.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
-@Controller('users')
+@Controller({ path: 'users' }) // ⬅️ Gắn version 1
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -47,8 +45,6 @@ export class UsersController {
   }
 
   @ApiBearerAuth('access-token')
-  // @UseGuards(AuthGuard('jwtaccess'))
-  @Public()
   @ApiOperation({ summary: 'Get a user by Id' })
   @Get(':id')
   @ApiResponse({
@@ -63,15 +59,15 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Update a user by Id' })
   @ApiBody({ type: UpdateUserDto })
-  @Public()
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
   })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto)
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Request() req) {
+    const user = req.user || null
+    return this.usersService.update(id, updateUserDto, user)
   }
 
   @ApiOperation({ summary: 'Delete a user by Id' })
@@ -81,8 +77,9 @@ export class UsersController {
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETE_SUCCESS)
   })
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id)
+  remove(@Param('id') id: string, @Request() req) {
+    const user = req.user || null
+    return this.usersService.remove(id, user)
   }
 
   @Post(':id/addresses')
@@ -97,10 +94,10 @@ export class UsersController {
     return this.usersService.createAddress(id, createAddressDto)
   }
 
+  @ApiBearerAuth('access-token')
   @Patch(':id/addresses/:addressId')
   @ApiOperation({ summary: 'Update address for user by addressId' })
   @ApiBody({ type: UpdateAddressDto })
-  @Public()
   @ApiResponse({
     status: 200,
     description: 'Address updated successfully',
@@ -109,9 +106,11 @@ export class UsersController {
   updateAddress(
     @Param('id') id: string,
     @Param('addressId') addressId: string,
-    @Body() updateAddressDto: UpdateAddressDto
+    @Body() updateAddressDto: UpdateAddressDto,
+    @Request() req
   ) {
-    return this.usersService.updateAddress(id, addressId, updateAddressDto)
+    const user = req.user || null
+    return this.usersService.updateAddress(id, addressId, updateAddressDto, user)
   }
 
   @Delete(':id/addresses/:addressId')

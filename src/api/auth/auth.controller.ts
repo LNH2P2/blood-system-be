@@ -1,3 +1,4 @@
+import { RefreshTokenDto } from '@api/refresh-token/dto/refresh-token.dto'
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Public } from '@decorators/public.decorator'
@@ -6,11 +7,13 @@ import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common'
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ResponseOnlyMessage } from 'src/helpers/custom-respone-message-only'
 import { AuthService } from './auth.service'
+import { ChangePasswrodDto } from './dto/change-password.dto'
 import { CreateAuthDto } from './dto/create-auth.dto'
+import { ResetPasswrodDto } from './dto/reset-password.dto'
 import { VerifyOtpDto } from './dto/verify.dto'
 // import { Public } from '@decorators/public.decorator'
 
-@Controller('auth')
+@Controller({ path: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -45,7 +48,55 @@ export class AuthController {
   }
 
   @Public()
-  @Post('refresh-token/:refreshToken')
+  @Post('logout/:userId')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'user logout' })
+  @ApiResponse({
+    status: 200,
+    description: 'User logout successfully',
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.LOGOUT_SUCCESS)
+  })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.LOGOUT_SUCCESS)
+  logout(@Param('userId') userId: string) {
+    return this.authService.logout(userId)
+  }
+
+  @Public()
+  @Post('change-password')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'user change password' })
+  @ApiResponse({
+    status: 200,
+    description: 'User change password successfully',
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPADTE_PASSWORD)
+  })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.UPADTE_PASSWORD)
+  @ApiBody({ type: ChangePasswrodDto })
+  changePassword(@Body() updatePassword: ChangePasswrodDto) {
+    return this.authService.changePassword(
+      updatePassword.userId,
+      updatePassword.oldPassword,
+      updatePassword.newPassword
+    )
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'user reset password' })
+  @ApiResponse({
+    status: 200,
+    description: 'User reset password successfully',
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPADTE_PASSWORD)
+  })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.UPADTE_PASSWORD)
+  @ApiBody({ type: ResetPasswrodDto })
+  resetPassword(@Body() resetPassword: ResetPasswrodDto) {
+    return this.authService.resetPassword(resetPassword.email, resetPassword.newPassword, resetPassword.otp)
+  }
+
+  @Public()
+  @Post('refresh-token')
   @HttpCode(200)
   @ApiOperation({ summary: 'user refresh token' })
   @ApiResponse({
@@ -53,9 +104,9 @@ export class AuthController {
     description: 'User refresh token successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.REFRESH_TOKEN_SUCCESS)
   })
-  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.LOGIN_SUCCESS)
-  refreshtoken(@Param('refreshToken') refreshToken: string) {
-    return this.authService.refreshToken(refreshToken)
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.REFRESH_TOKEN_SUCCESS)
+  refreshtoken(@Body() refresh: RefreshTokenDto) {
+    return this.authService.refreshToken(refresh.refreshToken)
   }
 
   @Public()
@@ -81,8 +132,22 @@ export class AuthController {
     description: 'Resend OTP verified successfully',
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.RESEND_VERIFICATION_EMAIL_SUCCESS)
   })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.RESEND_VERIFICATION_EMAIL_SUCCESS)
   resendOtp(@Param('email') email: string) {
     return this.authService.resendVerificationEmail(email)
+  }
+
+  @Public()
+  @Post('send-otp-reset-password/:email')
+  @ApiOperation({ summary: 'send otp OTP' })
+  @ApiResponse({
+    status: 200,
+    description: 'User OTP to reset successfully',
+    example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.SEND_OTP_SUCCESS)
+  })
+  @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.SEND_OTP_SUCCESS)
+  sendOtpResetPassword(@Param('email') email: string) {
+    return this.authService.sendOtpForgotPassword(email)
   }
   //resendVerificationEmail
 }

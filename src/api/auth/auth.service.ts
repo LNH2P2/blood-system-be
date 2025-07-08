@@ -1,3 +1,4 @@
+import { RefreshToken, RefreshTokenDocument } from '@api/refresh-token/entities/refresh-token.entity'
 import { RefreshTokenService } from '@api/refresh-token/refresh-token.service'
 import { EnumDeviceType } from '@api/refresh-token/types/enum'
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
@@ -8,7 +9,7 @@ import { ErrorCode } from '@constants/error-code.constant'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { ValidationException } from '@exceptions/validattion.exception'
 import { MailerService } from '@nestjs-modules/mailer'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
@@ -17,8 +18,11 @@ import parseTimeStringToMs from 'src/helpers/getTimeByText'
 import RanDomNumber from 'src/helpers/otp-number'
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
+    @InjectModel(RefreshToken.name) private refreshModel: Model<RefreshTokenDocument>,
     private readonly userService: UsersService,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
@@ -59,7 +63,7 @@ export class AuthService {
     const user = await this.userModel.findOne({ username }).exec()
 
     if (!user) {
-      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.USERNAME_OR_PASSWORD_IS_WRONG)
     }
 
     // 2. Kiểm tra mật khẩu (giả sử đã hash khi tạo user)
@@ -74,7 +78,7 @@ export class AuthService {
     }
 
     // 4. Tạo payload và JWT token
-    const payload = { sub: user._id, email: user.email, username: user.username }
+    const payload = { sub: user._id, email: user.email, username: user.username, role: user.role }
     const access_token = this.jwtService.sign(payload)
 
     const refresh_token = this.jwtService.sign(payload, {
@@ -98,6 +102,104 @@ export class AuthService {
     return {
       access_token: access_token,
       refresh_token: refresh_token
+    }
+  }
+  async logout(userId: string) {
+    try {
+      const checkUser = await this.userModel.findById(userId).exec()
+      if (!checkUser) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      const refreshTokenData = await this.refreshModel.findOne({ user: checkUser._id })
+      if (refreshTokenData) {
+        await this.refreshService.deleteRefreshToken(refreshTokenData._id)
+      }
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error // Re-throw the validation exception
+      }
+      console.error('Logout error:', error)
+      throw new InternalServerErrorException('Logout failed')
+    }
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    try {
+      const checkUser = await this.userModel.findById(userId).exec()
+      if (!checkUser) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+      // 1. Kiểm tra mật khẩu cũ
+      const isPasswordMatching = await bcrypt.compare(oldPassword, checkUser.password)
+      if (!isPasswordMatching) {
+        throw new ValidationException(ErrorCode.E016, RESPONSE_MESSAGES.USER_MESSAGE.WRONG_PASSWORD)
+      }
+      await this.userService.updatePassword(userId, newPassword)
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error // Re-throw the validation exception
+      }
+      console.error('Change password error:', error)
+      throw new InternalServerErrorException('Change password failed')
+    }
+  }
+
+  async resetPassword(email: string, newPassword: string, otp: number) {
+    try {
+      const user = await this.userModel.findOne({ email }).exec()
+      if (!user) {
+        throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      // 1. Kiểm tra mã OTP
+      if (user.codeId !== otp) {
+        throw new ValidationException(ErrorCode.E012, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_NOT_FOUND)
+      }
+
+      // 2. Kiểm tra thời gian hết hạn
+      if (!user.codeExpired || user.codeExpired < new Date()) {
+        throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.CODE_EXPIRED)
+      }
+
+      // 4. Cập nhật mật khẩu + xóa OTP
+      await this.userService.updatePassword(user._id.toString(), newPassword)
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      console.error('Reset password error:', error)
+      throw new InternalServerErrorException('Reset password failed')
+    }
+  }
+
+  async sendOtpForgotPassword(email: string) {
+    try {
+      if (!email) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_NOT_EXISTED)
+      }
+      const user = await this.userModel.findOne({ email }).exec()
+      if (!user) {
+        throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.EMAIL_NOT_EXISTED)
+      }
+
+      const otp = RanDomNumber() // 6 chữ số
+
+      await this.userService.updateOtp(email, otp)
+      await this.sendEmailVerification(email, otp)
+
+      return
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error // Re-throw the validation exception
+      }
+      console.error('Send OTP for forgot password error:', error)
+      throw new InternalServerErrorException('Failed to send OTP for forgot password')
     }
   }
 
@@ -137,8 +239,11 @@ export class AuthService {
           otp_code: OTP
         }
       })
+      this.logger.log(`Verification email sent to ${email}`)
     } catch (error) {
-      throw new BadRequestException('Invalid email format', error)
+      this.logger.warn(`Failed to send verification email to ${email}: ${error?.message}`)
+      // Không throw nữa nếu bạn không muốn hiện màu đỏ
+      // Nếu cần throw (ví dụ cho Controller biết), hãy throw CustomException không gây ERROR trong console
     }
   }
 
@@ -149,7 +254,6 @@ export class AuthService {
    */
   async authenOtpCodeWithEmail(otp: number, email: string) {
     try {
-      console.log('Authenticating OTP code for email:', email, 'with code:', otp)
       // 1. Tìm người dùng theo email
       const user = await this.userModel.findOne({ email }).exec()
       if (!user) {
@@ -174,23 +278,45 @@ export class AuthService {
     }
   }
 
-  async refreshToken(token: string) {
+  async refreshToken(refreshToken: string) {
     try {
-      // 1. Giải mã token để lấy thông tin người dùng
-      const payload = this.jwtService.verify(token, {
+      // 1. Giải mã token để lấy payload
+      const payload = this.jwtService.verify(refreshToken, {
         secret: jwtConstants.secret_refresh
       })
 
       // 2. Tìm refresh token trong DB
-      await this.refreshService.findByToken(token)
+      const refreshTokenDoc = await this.refreshService.findByToken(refreshToken)
+      if (!refreshTokenDoc) {
+        throw new ValidationException(ErrorCode.E014, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_NOT_FOUND)
+      }
 
-      // 3. Tạo access token mới
-      const access_token = this.jwtService.sign({ sub: payload.sub, email: payload.email, username: payload.username })
+      // 3. Kiểm tra hạn của refresh token
+      if (!refreshTokenDoc.expiresAt || refreshTokenDoc.expiresAt < new Date()) {
+        throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_EXPIRED)
+      }
 
-      return { access_token: access_token }
+      // 4. Kiểm tra user có tồn tại không
+      const user = await this.userModel.findById(payload.sub).exec()
+      if (!user) {
+        throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      // 5. Tạo access token mới
+      const access_token = this.jwtService.sign({
+        sub: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role
+      })
+
+      return { access_token }
     } catch (error) {
       console.error('Refresh token error:', error)
-      throw new BadRequestException('Invalid refresh token', error)
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      throw new BadRequestException('Invalid or expired refresh token', error)
     }
   }
 }
