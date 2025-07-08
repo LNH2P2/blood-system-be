@@ -30,11 +30,14 @@ export class DonationRequestService {
     return this.donationMatchModel.findById(id)
   }
 
-  update(id: number, updateDonationMatchDto: UpdateDonationRequestDto) {
-    return `This action updates a #${id} donationMatch`
+  async update(id: string, updateDto: UpdateDonationRequestDto) {
+    return await this.donationMatchModel.findByIdAndUpdate(id, updateDto, {
+      new: true,
+      runValidators: true
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} donationMatch`
+  async remove(id: string) {
+    return await this.donationMatchModel.findByIdAndDelete(id)
   }
 }

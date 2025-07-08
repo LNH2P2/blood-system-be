@@ -47,12 +47,12 @@ export class DonationRequestController {
   @Patch(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
-    return this.donationRequestService.update(+id, updateDonationRequestDto)
+    return this.donationRequestService.update(id, updateDonationRequestDto)
   }
 
   @Delete(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.DELETED)
   remove(@Param('id') id: string) {
-    return this.donationRequestService.remove(+id)
+    return this.donationRequestService.remove(id)
   }
 }

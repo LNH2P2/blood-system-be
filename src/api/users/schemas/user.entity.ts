@@ -45,7 +45,8 @@ export class User {
   accountType: string
 
   // Dùng reference đến RefreshToken
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'RefreshToken' }], default: {} })
+  //tui sửa chỗ này nè nhe, default ban đầu là {}, nhưng nó chạy không được, phải là null mới đc
+  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'RefreshToken' }], default: null })
   refreshTokenId: Types.ObjectId
 
   @Prop({ default: true })

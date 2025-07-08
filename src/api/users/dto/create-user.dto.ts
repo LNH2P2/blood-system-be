@@ -139,6 +139,7 @@ export class CreateUserDto {
     },
     required: true
   })
+  @IsOptional()
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => CreatedByDto)
