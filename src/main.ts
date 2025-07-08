@@ -2,12 +2,7 @@ import { AllConfigType } from '@config/config.type'
 import { configSwagger } from '@config/openapi.config'
 import { GlobalExceptionFilter } from '@filters/global-exception.filter'
 import { TransformInterceptor } from '@interceptors/transform.interceptor'
-import {
-  HttpStatus,
-  UnprocessableEntityException,
-  ValidationPipe,
-  VersioningType
-} from '@nestjs/common'
+import { HttpStatus, UnprocessableEntityException, ValidationPipe, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { ValidationError } from 'class-validator'

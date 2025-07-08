@@ -12,7 +12,7 @@ export class RefreshToken {
   @Prop({ type: Date, required: true })
   expiresAt: Date
 
-  @Prop({ unique: true })
+  @Prop({ required: true })
   deviceInfo: string
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
@@ -20,3 +20,4 @@ export class RefreshToken {
 }
 
 export const RefreshTokenSchema = SchemaFactory.createForClass(RefreshToken)
+RefreshTokenSchema.index({ user: 1, deviceInfo: 1 }, { unique: true })
