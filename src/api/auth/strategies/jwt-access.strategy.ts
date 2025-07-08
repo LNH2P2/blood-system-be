@@ -32,7 +32,6 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwtaccess') {
       _id: user._id.toString(),
       email: user.email,
       username: user.username,
-      fullName: user.fullName,
       role: user.role
     }
   }

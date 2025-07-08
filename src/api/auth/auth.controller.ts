@@ -1,3 +1,4 @@
+import { RefreshTokenDto } from '@api/refresh-token/dto/refresh-token.dto'
 import { CreateUserDto } from '@api/users/dto/create-user.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Public } from '@decorators/public.decorator'
@@ -12,7 +13,7 @@ import { ResetPasswrodDto } from './dto/reset-password.dto'
 import { VerifyOtpDto } from './dto/verify.dto'
 // import { Public } from '@decorators/public.decorator'
 
-@Controller({ path: 'auth', version: '1' })
+@Controller({ path: 'auth' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -95,7 +96,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('refresh-token/:refreshToken')
+  @Post('refresh-token')
   @HttpCode(200)
   @ApiOperation({ summary: 'user refresh token' })
   @ApiResponse({
@@ -104,8 +105,8 @@ export class AuthController {
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.REFRESH_TOKEN_SUCCESS)
   })
   @ResponseMessage(RESPONSE_MESSAGES.USER_MESSAGE.REFRESH_TOKEN_SUCCESS)
-  refreshtoken(@Param('refreshToken') refreshToken: string) {
-    return this.authService.refreshToken(refreshToken)
+  refreshtoken(@Body() refresh: RefreshTokenDto) {
+    return this.authService.refreshToken(refresh.refreshToken)
   }
 
   @Public()

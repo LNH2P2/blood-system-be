@@ -63,7 +63,7 @@ export class AuthService {
     const user = await this.userModel.findOne({ username }).exec()
 
     if (!user) {
-      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.USERNAME_OR_PASSWORD_IS_WRONG)
     }
 
     // 2. Kiểm tra mật khẩu (giả sử đã hash khi tạo user)
@@ -100,7 +100,8 @@ export class AuthService {
     })
 
     return {
-      access_token: access_token
+      access_token: access_token,
+      refresh_token: refresh_token
     }
   }
   async logout(userId: string) {
@@ -277,23 +278,45 @@ export class AuthService {
     }
   }
 
-  async refreshToken(token: string) {
+  async refreshToken(refreshToken: string) {
     try {
-      // 1. Giải mã token để lấy thông tin người dùng
-      const payload = this.jwtService.verify(token, {
+      // 1. Giải mã token để lấy payload
+      const payload = this.jwtService.verify(refreshToken, {
         secret: jwtConstants.secret_refresh
       })
 
       // 2. Tìm refresh token trong DB
-      await this.refreshService.findByToken(token)
+      const refreshTokenDoc = await this.refreshService.findByToken(refreshToken)
+      if (!refreshTokenDoc) {
+        throw new ValidationException(ErrorCode.E014, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_NOT_FOUND)
+      }
 
-      // 3. Tạo access token mới
-      const access_token = this.jwtService.sign({ sub: payload.sub, email: payload.email, username: payload.username })
+      // 3. Kiểm tra hạn của refresh token
+      if (!refreshTokenDoc.expiresAt || refreshTokenDoc.expiresAt < new Date()) {
+        throw new ValidationException(ErrorCode.E008, RESPONSE_MESSAGES.USER_MESSAGE.TOKEN_EXPIRED)
+      }
 
-      return { access_token: access_token }
+      // 4. Kiểm tra user có tồn tại không
+      const user = await this.userModel.findById(payload.sub).exec()
+      if (!user) {
+        throw new ValidationException(ErrorCode.E007, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      // 5. Tạo access token mới
+      const access_token = this.jwtService.sign({
+        sub: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role
+      })
+
+      return { access_token }
     } catch (error) {
       console.error('Refresh token error:', error)
-      throw new BadRequestException('Invalid refresh token', error)
+      if (error instanceof ValidationException) {
+        throw error
+      }
+      throw new BadRequestException('Invalid or expired refresh token', error)
     }
   }
 }
