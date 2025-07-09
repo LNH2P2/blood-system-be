@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     // 4. Tạo payload và JWT token
-    const payload = { sub: user._id, email: user.email, username: user.username, role: user.role }
+    const payload = { sub: user._id, email: user.email, username: user.username, image: user.image, role: user.role }
     const access_token = this.jwtService.sign(payload)
 
     const refresh_token = this.jwtService.sign(payload, {
@@ -313,6 +313,7 @@ export class AuthService {
         sub: user._id,
         email: user.email,
         username: user.username,
+        image: user.image,
         role: user.role
       })
 

@@ -141,7 +141,6 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, req?) {
-    console.log('updateUserDto', updateUserDto)
     try {
       const user = req as {
         _id: string
