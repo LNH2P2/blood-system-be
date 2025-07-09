@@ -137,6 +137,12 @@ export class AuthService {
       if (!isPasswordMatching) {
         throw new ValidationException(ErrorCode.E016, RESPONSE_MESSAGES.USER_MESSAGE.WRONG_PASSWORD)
       }
+
+      // 2. Kiểm tra mật khẩu mới không được giống mật khẩu cũ
+      const isNewPasswordSameAsOld = await bcrypt.compare(newPassword, checkUser.password)
+      if (isNewPasswordSameAsOld) {
+        throw new ValidationException(ErrorCode.E017, RESPONSE_MESSAGES.USER_MESSAGE.PASSWORD_IS_SAME_AS_OLD)
+      }
       await this.userService.updatePassword(userId, newPassword)
       return
     } catch (error) {
