@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
 import { BlogService } from './blog.service'
 import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
 import { Public } from '@decorators/public.decorator'
+import { ListBlogReqDto } from './dto/list-blog.req.dto'
+import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
+import { ResponseMessage } from '@decorators/response-message.decorator'
 
 @Controller('blog')
 @Public() //TODO: Remove this decorator -- it's for testing purposes
@@ -15,8 +19,14 @@ export class BlogController {
   }
 
   @Get()
-  findAll() {
-    return this.blogService.findAll()
+  @ApiOperation({ summary: 'Get list blog' })
+  @ApiOkResponse({
+    description: 'Get list blog successfully'
+  })
+  @ApiQuery({ type: ListBlogReqDto })
+  @ResponseMessage(RESPONSE_MESSAGES.BLOG.LIST)
+  findAll(@Query() listBlogReqDto: ListBlogReqDto) {
+    return this.blogService.findAll(listBlogReqDto)
   }
 
   @Get(':id')

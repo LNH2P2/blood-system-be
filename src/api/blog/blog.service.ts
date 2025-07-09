@@ -4,6 +4,8 @@ import { UpdateBlogDto } from './dto/update-blog.dto'
 import { Blog, BlogDocument } from './schemas/blog.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { ListBlogReqDto } from './dto/list-blog.req.dto'
+import { PaginationUtil } from '@utils/pagination.util'
 
 @Injectable()
 export class BlogService {
@@ -13,8 +15,14 @@ export class BlogService {
     return this.blogModel.create(createBlogDto)
   }
 
-  findAll() {
-    return this.blogModel.find()
+  findAll(listBlogReqDto: ListBlogReqDto) {
+    return PaginationUtil.paginate({
+      model: this.blogModel,
+      pageOptions: listBlogReqDto,
+      searchFields: [],
+      sortField: 'createdAt',
+      filter: {}
+    })
   }
 
   findOne(id: string) {
