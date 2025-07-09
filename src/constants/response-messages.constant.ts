@@ -82,14 +82,14 @@ export const RESPONSE_MESSAGES = {
     CODE_EXPIRED: 'Code expired',
     WRONG_PASSWORD: 'Wrong password',
     WRONG_USERNAME: 'Wrong username',
+    PASSWORD_IS_SAME_AS_OLD: 'New password cannot be the same as old password',
     UNVERIFIED_EMAIL: 'Email is not verified',
     USERNAME_OR_PASSWORD_IS_WRONG: 'Username or password is wrong',
     TOKEN_NOT_FOUND: 'Token not found',
     TOKEN_EXPIRED: 'Token expired',
     INVALID_REFRESH_TOKEN: 'Invalid refresh token',
     CONFIRM_PASSWORD_NOT_MATCH: 'Confirm password does not match',
-    ADDRESS_NOT_FOUND: 'Address not found',
-    
+    ADDRESS_NOT_FOUND: 'Address not found'
   },
 
   ERROR_MESSAGE: {
