@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { IsOptional } from 'class-validator'
 import { BlogStatus } from '../blog.constants'
 
 export class CreateBlogDto {
@@ -28,7 +29,10 @@ export class CreateBlogDto {
 
   @ApiProperty({
     description: 'The status of the blog',
-    example: BlogStatus.DRAFT
+    example: BlogStatus.DRAFT,
+    required: false,
+    default: BlogStatus.DRAFT
   })
-  status: BlogStatus
+  @IsOptional()
+  status: BlogStatus = BlogStatus.DRAFT
 }
