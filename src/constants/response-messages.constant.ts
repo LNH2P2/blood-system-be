@@ -104,7 +104,9 @@ export const RESPONSE_MESSAGES = {
     TOKEN_NOT_FOUND: 'Token not found',
     TOKEN_EXPIRED: 'Token expired',
     INVALID_REFRESH_TOKEN: 'Invalid refresh token',
-    CONFIRM_PASSWORD_NOT_MATCH: 'Confirm password does not match'
+    CONFIRM_PASSWORD_NOT_MATCH: 'Confirm password does not match',
+    ADDRESS_NOT_FOUND: 'Address not found',
+    
   },
 
   ERROR_MESSAGE: {
