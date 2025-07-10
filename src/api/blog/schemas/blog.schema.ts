@@ -9,22 +9,25 @@ export type BlogDocument = HydratedDocument<Blog>
   timestamps: true
 })
 export class Blog extends AbstractSchema {
-  @Prop()
+  @Prop({ required: true })
   title: string
 
   @Prop()
   image: string
 
-  @Prop()
+  @Prop({ required: true })
   summary: string
 
-  @Prop()
+  @Prop({ required: true })
   content: string
 
-  @Prop()
+  @Prop({
+    enum: BlogStatus,
+    default: BlogStatus.DRAFT
+  })
   status: BlogStatus
 
-  @Prop()
+  @Prop({ default: 0 })
   viewCount: number
 }
 
