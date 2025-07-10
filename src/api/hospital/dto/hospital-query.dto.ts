@@ -7,13 +7,10 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 export class HospitalQueryDto extends PageOptionsDto {
   @ApiPropertyOptional({
     description: 'Search term for name, address, description',
-    minLength: 2,
-    maxLength: 100,
     example: 'Bach Mai Hospital'
   })
   @IsOptional()
   @IsString()
-  @Length(2, 100)
   search?: string
 
   @ApiPropertyOptional({
