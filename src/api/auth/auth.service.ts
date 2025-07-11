@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     // 4. Tạo payload và JWT token
-    const payload = { sub: user._id, email: user.email, username: user.username, role: user.role }
+    const payload = { sub: user._id, email: user.email, username: user.username, image: user.image, role: user.role }
     const access_token = this.jwtService.sign(payload)
 
     const refresh_token = this.jwtService.sign(payload, {
@@ -136,6 +136,12 @@ export class AuthService {
       const isPasswordMatching = await bcrypt.compare(oldPassword, checkUser.password)
       if (!isPasswordMatching) {
         throw new ValidationException(ErrorCode.E016, RESPONSE_MESSAGES.USER_MESSAGE.WRONG_PASSWORD)
+      }
+
+      // 2. Kiểm tra mật khẩu mới không được giống mật khẩu cũ
+      const isNewPasswordSameAsOld = await bcrypt.compare(newPassword, checkUser.password)
+      if (isNewPasswordSameAsOld) {
+        throw new ValidationException(ErrorCode.E017, RESPONSE_MESSAGES.USER_MESSAGE.PASSWORD_IS_SAME_AS_OLD)
       }
       await this.userService.updatePassword(userId, newPassword)
       return
@@ -307,6 +313,7 @@ export class AuthService {
         sub: user._id,
         email: user.email,
         username: user.username,
+        image: user.image,
         role: user.role
       })
 

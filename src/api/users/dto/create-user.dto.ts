@@ -170,5 +170,5 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsBoolean()
-  verified: boolean = false
+  verified: boolean
 }
