@@ -36,6 +36,9 @@ export class BlogService {
       }
     ])
 
+    // Get the latest updated blog
+    const latestBlog = await this.blogModel.findOne().sort({ updatedAt: -1 }).select('updatedAt').exec()
+
     // Initialize counts for all statuses
     const statusCountsMap = {
       [BlogStatus.DRAFT]: 0,
@@ -51,10 +54,11 @@ export class BlogService {
       }
     })
 
-    // Return both paginated data and status counts
+    // Return both paginated data, status counts, and latest updated timestamp
     return {
       ...paginatedResult,
-      statusCounts: statusCountsMap
+      statusCounts: statusCountsMap,
+      latestUpdatedAt: latestBlog?.updatedAt || null
     }
   }
 
