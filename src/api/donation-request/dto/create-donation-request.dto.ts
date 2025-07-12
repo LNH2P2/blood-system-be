@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
-import { DonationRequestStatus } from 'src/constants/donation.constant'
+import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator'
+import { DonationRequestStatus, DonationRequestPriority } from 'src/constants/donation.constant'
 
 export class CreateDonationRequestDto {
   @ApiProperty({
@@ -37,4 +37,40 @@ export class CreateDonationRequestDto {
   @IsOptional()
   @IsString()
   note?: string
+
+  // Bổ sung các trường cho UI
+  @ApiProperty({
+    example: 'A+'
+  })
+  @IsString()
+  @IsNotEmpty()
+  bloodType: string
+
+  @ApiProperty({
+    example: 2
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number
+
+  @ApiProperty({
+    example: 'Cấp cứu'
+  })
+  @IsEnum(DonationRequestPriority)
+  @IsOptional()
+  priority: DonationRequestPriority = DonationRequestPriority.NORMAL
+
+  @ApiProperty({
+    example: 'Hà Nội'
+  })
+  @IsString()
+  @IsNotEmpty()
+  location: string
+
+  @ApiProperty({
+    example: 'Nguyễn Văn A'
+  })
+  @IsString()
+  @IsNotEmpty()
+  createdBy: string
 }

@@ -21,3 +21,8 @@ export enum BloodType {
   O_POSITIVE,
   O_NEGATIVE
 }
+
+export enum DonationRequestPriority {
+  NORMAL = 'normal',
+  URGENT = 'urgent'
+}

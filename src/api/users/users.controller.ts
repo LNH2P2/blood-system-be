@@ -13,6 +13,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
+import { Public } from '@decorators/public.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
 @Controller({ path: 'users' }) // ⬅️ Gắn version 1
@@ -33,6 +34,7 @@ export class UsersController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all users' })
   @ApiOkResponse({
     description: 'List of users',

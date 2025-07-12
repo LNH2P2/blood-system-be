@@ -64,4 +64,21 @@ export class DonationRequestService {
     console.log('Available hospitals:', hospitals)
     return hospitals
   }
+
+  async findAllHospital(reqDto: ListDonationReqDto & { priority?: string }) {
+    // Thêm filter priority nếu có
+    const filter: any = {}
+    if (reqDto.priority) {
+      filter.priority = reqDto.priority
+    }
+    console.log('findAllHospital filter:', filter)
+    return await PaginationUtil.paginate({
+      model: this.donationMatchModel,
+      pageOptions: reqDto,
+      searchFields: [],
+      sortField: 'createdAt',
+      filter,
+      populate: { path: 'hospitalId' }
+    })
+  }
 }

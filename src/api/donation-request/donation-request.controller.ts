@@ -32,9 +32,18 @@ export class DonationRequestController {
   @ApiQuery({ type: ListDonationReqDto })
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
   findAll(@Query() listDonationReqDto: ListDonationReqDto, @Req() req: any) {
-    // console.log('req.user', req.user)
+    console.log('req.user', req.user)
     // TODO: get userId from req.user
     return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
+  }
+
+  @Get('findAllHospital')
+  @ApiOperation({ summary: 'Get all donation requests for hospital (for hospital dashboard)' })
+  @ApiQuery({ type: ListDonationReqDto })
+  @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
+  findAllHospital(@Query() listDonationReqDto: ListDonationReqDto) {
+    console.log('listDonationReqDto', listDonationReqDto)
+    return this.donationRequestService.findAllHospital(listDonationReqDto)
   }
 
   @Get(':id')

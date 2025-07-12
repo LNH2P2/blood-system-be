@@ -42,9 +42,7 @@ import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
       expandVariables: true,
       load: [databaseConfig, appConfig]
     }),
-    MongooseModule.forRootAsync({
-      useClass: MongooseConfigService
-    }),
+    MongooseModule.forRoot('mongodb://mongo:mongo@localhost:27019/blood_system_db?authSource=admin'),
     MailerModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         transport: {
