@@ -179,7 +179,7 @@ export class UsersService {
 
       await this.userModel.findByIdAndUpdate(id, { $set: updateUserDto }, { new: true, runValidators: true })
 
-      return
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
     } catch (error) {
       // Kiểm tra nếu lỗi là ValidationException
       if (error instanceof ValidationException) {
@@ -206,7 +206,7 @@ export class UsersService {
 
       // Cập nhật mật khẩu
 
-      return await this.userModel.findByIdAndUpdate(
+      await this.userModel.findByIdAndUpdate(
         id,
         {
           $set: {
@@ -220,6 +220,7 @@ export class UsersService {
           runValidators: true
         }
       )
+      return ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error
@@ -228,6 +229,7 @@ export class UsersService {
       throw new InternalServerErrorException('Error updating password')
     }
   }
+
   async updateOtp(email: string, otp: number) {
     try {
       if (!email) {
