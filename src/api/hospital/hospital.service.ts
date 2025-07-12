@@ -6,12 +6,10 @@ import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.s
 import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
-import { HospitalStatus } from '../../constants/hospital.constant'
-import { FindAllResult } from '../../common/dto/pagination/pagination.list.dto'
 import { ValidateObjectId } from '../../exceptions/validattion.exception'
-import { UserRole } from '../users/user-type/enum/user.enum'
-import { CurrentUser } from './interfaces/current-user.interface'
 import { BloodInventoryItem } from './interfaces/hospital.interface'
+import { PaginationUtil } from '../../utils/pagination.util'
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
 @Injectable()
 export class HospitalService {
@@ -22,12 +20,8 @@ export class HospitalService {
     private hospitalStaffModel: Model<HospitalStaffDocument>
   ) {}
 
-  async create(createHospitalDto: CreateHospitalDto, currentUser: CurrentUser): Promise<Hospital> {
+  async create(createHospitalDto: CreateHospitalDto): Promise<Hospital> {
     try {
-      // if (currentUser.role !== UserRole.Admin) {
-      //   throw new ForbiddenException('Only administrators can create hospitals')
-      // }
-
       // Check for duplicate hospital name in same district
       const existingHospital = await this.hospitalModel.findOne({
         name: createHospitalDto.name,
@@ -51,11 +45,7 @@ export class HospitalService {
       }
 
       const hospital = new this.hospitalModel({
-        ...createHospitalDto,
-        createdAtBy: {
-          _id: currentUser._id,
-          email: currentUser.email
-        }
+        ...createHospitalDto
       })
 
       return await hospital.save()
@@ -66,97 +56,57 @@ export class HospitalService {
       throw new BadRequestException('Failed to create hospital')
     }
   }
+  async findAll(query: HospitalQueryDto) {
+    const { search, province, district, ward, isActive, bloodType, component, ...reqDto } = query
 
-  async findAll(query: HospitalQueryDto, currentUser?: CurrentUser): Promise<FindAllResult<Hospital>> {
-    try {
-      const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', ...filters } = query
+    // Build filter conditions
+    const filter: Record<string, unknown> = { isDeleted: false }
 
-      // Build filter conditions
-      const conditions: Record<string, unknown> = { isDeleted: false }
-
-      // Public users can only see approved and active hospitals
-      if (!currentUser || currentUser.role !== UserRole.Admin) {
-        conditions.status = HospitalStatus.APPROVED
-        conditions.isActive = true
-      }
-
-      // Apply filters
-      if (filters.search) {
-        conditions.$text = { $search: filters.search }
-      }
-
-      if (filters.province) {
-        conditions.province = { $regex: filters.province, $options: 'i' }
-      }
-
-      if (filters.district) {
-        conditions.district = { $regex: filters.district, $options: 'i' }
-      }
-
-      if (filters.ward) {
-        conditions.ward = { $regex: filters.ward, $options: 'i' }
-      }
-
-      if (filters.status && currentUser?.role === UserRole.Admin) {
-        conditions.status = filters.status
-      }
-
-      if (filters.isActive !== undefined) {
-        conditions.isActive = filters.isActive
-      }
-
-      // Blood inventory filters
-      if (filters.bloodType || filters.component) {
-        const bloodConditions: Record<string, unknown> = {}
-        if (filters.bloodType) {
-          bloodConditions['bloodInventory.bloodType'] = filters.bloodType
-        }
-        if (filters.component) {
-          bloodConditions['bloodInventory.component'] = filters.component
-        }
-        Object.assign(conditions, bloodConditions)
-      }
-
-      // Sorting
-      const sort: Record<string, 1 | -1> = {}
-      sort[sortBy] = sortOrder === 'asc' ? 1 : -1
-
-      // Execute query with pagination
-      const skip = (page - 1) * limit
-      const [hospitals, totalItems] = await Promise.all([
-        this.hospitalModel.find(conditions).sort(sort).skip(skip).limit(limit).lean().exec(),
-        this.hospitalModel.countDocuments(conditions)
-      ])
-
-      const totalPages = Math.ceil(totalItems / limit)
-
-      return {
-        message: 'Hospitals retrieved successfully',
-        data: {
-          meta: {
-            current: page,
-            limit: limit,
-            pages: totalPages,
-            total: totalItems
-          },
-          result: hospitals
-        }
-      }
-    } catch {
-      throw new BadRequestException('Failed to fetch hospitals')
+    // Apply filters
+    if (province) {
+      filter.province = { $regex: province, $options: 'i' }
     }
-  }
 
-  async findOne(id: string, currentUser?: CurrentUser): Promise<Hospital> {
+    if (district) {
+      filter.district = { $regex: district, $options: 'i' }
+    }
+
+    if (ward) {
+      filter.ward = { $regex: ward, $options: 'i' }
+    }
+
+    if (isActive !== undefined) {
+      filter.isActive = isActive
+    }
+
+    // Blood inventory filters
+    if (bloodType) {
+      filter['bloodInventory.bloodType'] = bloodType
+    }
+
+    if (component) {
+      filter['bloodInventory.component'] = component
+    }
+
+    // Set search query if provided
+    if (search) {
+      reqDto.q = search
+    }
+
+    const searchFields = ['name', 'address', 'province', 'district', 'ward']
+
+    return await PaginationUtil.paginate({
+      model: this.hospitalModel,
+      pageOptions: reqDto as PageOptionsDto,
+      searchFields,
+      sortField: 'createdAt',
+      filter
+    })
+  }
+  async findOne(id: string): Promise<Hospital> {
     ValidateObjectId(id)
 
     const conditions: Record<string, unknown> = { _id: id, isDeleted: false }
-
-    // Public users can only see approved and active hospitals
-    if (!currentUser || currentUser.role !== UserRole.Admin) {
-      conditions.status = HospitalStatus.APPROVED
-      conditions.isActive = true
-    }
 
     const hospital = await this.hospitalModel.findOne(conditions).lean().exec()
 
@@ -167,14 +117,8 @@ export class HospitalService {
     return hospital
   }
 
-  async update(id: string, updateHospitalDto: UpdateHospitalDto, currentUser: CurrentUser): Promise<Hospital> {
+  async update(id: string, updateHospitalDto: UpdateHospitalDto): Promise<Hospital> {
     ValidateObjectId(id)
-
-    // Check permissions
-    const canUpdate = await this.checkUpdatePermission(id, currentUser)
-    if (!canUpdate) {
-      throw new ForbiddenException('You do not have permission to update this hospital')
-    }
 
     // Validate expiration dates for blood inventory
     if (updateHospitalDto.bloodInventory) {
@@ -190,11 +134,7 @@ export class HospitalService {
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
         {
-          ...updateHospitalDto,
-          updatedAtBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
+          ...updateHospitalDto
         },
         { new: true, runValidators: true }
       )
@@ -208,23 +148,14 @@ export class HospitalService {
     return hospital
   }
 
-  async remove(id: string, currentUser: CurrentUser): Promise<void> {
+  async remove(id: string): Promise<void> {
     ValidateObjectId(id)
-
-    // Only admin can delete hospitals
-    if (currentUser.role !== UserRole.Admin) {
-      throw new ForbiddenException('Only administrators can delete hospitals')
-    }
 
     const result = await this.hospitalModel
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
         {
-          isDeleted: true,
-          isDeletedBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
+          isDeleted: true
         }
       )
       .exec()
@@ -237,27 +168,13 @@ export class HospitalService {
     await this.hospitalStaffModel.updateMany(
       { hospitalId: id, isDeleted: false },
       {
-        isDeleted: true,
-        isDeletedBy: {
-          _id: currentUser._id,
-          email: currentUser.email
-        }
+        isDeleted: true
       }
     )
   }
 
-  async updateBloodInventory(
-    id: string,
-    bloodInventory: BloodInventoryItem[],
-    currentUser: CurrentUser
-  ): Promise<Hospital> {
+  async updateBloodInventory(id: string, bloodInventory: BloodInventoryItem[]): Promise<Hospital> {
     ValidateObjectId(id)
-
-    // Check permissions
-    const canUpdate = await this.checkUpdatePermission(id, currentUser)
-    if (!canUpdate) {
-      throw new ForbiddenException('You do not have permission to update this hospital blood inventory')
-    }
 
     // Validate expiration dates
     const now = new Date()
@@ -271,11 +188,7 @@ export class HospitalService {
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
         {
-          bloodInventory,
-          updatedAtBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
+          bloodInventory
         },
         { new: true, runValidators: true }
       )
@@ -289,14 +202,8 @@ export class HospitalService {
     return hospital
   }
 
-  async addBloodInventory(id: string, bloodItem: BloodInventoryItem, currentUser: CurrentUser): Promise<Hospital> {
+  async addBloodInventory(id: string, bloodItem: BloodInventoryItem): Promise<Hospital> {
     ValidateObjectId(id)
-
-    // Check permissions
-    const canUpdate = await this.checkUpdatePermission(id, currentUser)
-    if (!canUpdate) {
-      throw new ForbiddenException('You do not have permission to update this hospital blood inventory')
-    }
 
     // Validate expiration date
     if (new Date(bloodItem.expiresAt) <= new Date()) {
@@ -309,11 +216,7 @@ export class HospitalService {
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
         {
-          $push: { bloodInventory: bloodItem },
-          updatedAtBy: {
-            _id: currentUser._id,
-            email: currentUser.email
-          }
+          $push: { bloodInventory: bloodItem }
         },
         { new: true, runValidators: true }
       )
@@ -325,24 +228,5 @@ export class HospitalService {
     }
 
     return hospital
-  }
-
-  private async checkUpdatePermission(hospitalId: string, currentUser: CurrentUser): Promise<boolean> {
-    // Admin can update any hospital
-    if (currentUser.role === UserRole.Admin) {
-      return true
-    }
-
-    // Check if user is hospital admin or staff
-    const staff = await this.hospitalStaffModel
-      .findOne({
-        hospitalId: hospitalId,
-        userId: currentUser._id,
-        isActive: true,
-        isDeleted: false
-      })
-      .exec()
-
-    return !!staff
   }
 }

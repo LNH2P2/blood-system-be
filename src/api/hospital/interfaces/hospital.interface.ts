@@ -32,7 +32,6 @@ export interface MedicalFacility {
   description: string
   coordinates: Coordinates
   isActive: boolean
-  status?: string
   licenseNumber?: string
   establishedDate?: Date
   createdAt?: Date

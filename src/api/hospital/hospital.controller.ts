@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, Put, Req } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
-import { AuthGuard } from '@nestjs/passport'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
 import { ResponseMessage } from '../../decorators/response-message.decorator'
 import { HospitalService } from './hospital.service'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
@@ -9,6 +8,7 @@ import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { Hospital } from './schemas/hospital.schema'
 import { Public } from '../../decorators/public.decorator'
 import { UpdateBloodInventoryDto, AddBloodInventoryDto } from './dto/blood-inventory.dto'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 
 @ApiTags('hospitals')
 @Controller('hospitals')
@@ -16,9 +16,7 @@ export class HospitalController {
   constructor(private readonly hospitalService: HospitalService) {}
 
   @Post()
-  // @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
-  // @Public()
+  @Public()
   @ApiOperation({ summary: 'Create a new hospital (Admin only)' })
   @ApiResponse({
     status: 201,
@@ -26,11 +24,10 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: CreateHospitalDto })
-  @ResponseMessage('Hospital created successfully')
-  create(@Body() createHospitalDto: CreateHospitalDto, @Req() req) {
-    return this.hospitalService.create(createHospitalDto, req.user)
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.CREATED)
+  create(@Body() createHospitalDto: CreateHospitalDto) {
+    return this.hospitalService.create(createHospitalDto)
   }
-
   @Get()
   @Public()
   @ApiOperation({ summary: 'Get all hospitals with search and filter' })
@@ -38,11 +35,9 @@ export class HospitalController {
     description: 'List of hospitals',
     type: [Hospital]
   })
-  findAll(@Query() query: HospitalQueryDto, @Request() req) {
-    const currentUser = req.user || null
-    return this.hospitalService.findAll(query, currentUser)
+  findAll(@Query() query: HospitalQueryDto) {
+    return this.hospitalService.findAll(query)
   }
-
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get hospital by ID' })
@@ -51,14 +46,12 @@ export class HospitalController {
     description: 'Hospital details',
     type: Hospital
   })
-  findOne(@Param('id') id: string, @Request() req) {
-    const currentUser = req.user || null
-    return this.hospitalService.findOne(id, currentUser)
+  findOne(@Param('id') id: string) {
+    return this.hospitalService.findOne(id)
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Update hospital (Admin or Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -67,25 +60,23 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: UpdateHospitalDto })
-  @ResponseMessage('Hospital updated successfully')
-  update(@Param('id') id: string, @Body() updateHospitalDto: UpdateHospitalDto, @Request() req) {
-    return this.hospitalService.update(id, updateHospitalDto, req.user)
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.UPDATED)
+  update(@Param('id') id: string, @Body() updateHospitalDto: UpdateHospitalDto) {
+    return this.hospitalService.update(id, updateHospitalDto)
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Delete hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
     status: 200,
     description: 'Hospital deleted successfully'
   })
-  @ResponseMessage('Hospital deleted successfully')
-  remove(@Param('id') id: string, @Request() req) {
-    return this.hospitalService.remove(id, req.user)
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.DELETED)
+  remove(@Param('id') id: string) {
+    return this.hospitalService.remove(id)
   }
-
   @Get(':id/blood-inventory')
   @Public()
   @ApiOperation({ summary: 'Get hospital blood inventory' })
@@ -93,14 +84,12 @@ export class HospitalController {
   @ApiOkResponse({
     description: 'Blood inventory details'
   })
-  getBloodInventory(@Param('id') id: string, @Request() req) {
-    const currentUser = req.user || null
-    return this.hospitalService.findOne(id, currentUser)
+  getBloodInventory(@Param('id') id: string) {
+    return this.hospitalService.findOne(id)
   }
 
   @Put(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -109,18 +98,13 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: UpdateBloodInventoryDto })
-  @ResponseMessage('Blood inventory updated successfully')
-  updateBloodInventory(
-    @Param('id') id: string,
-    @Body() updateBloodInventoryDto: UpdateBloodInventoryDto,
-    @Request() req
-  ) {
-    return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory, req.user)
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  updateBloodInventory(@Param('id') id: string, @Body() updateBloodInventoryDto: UpdateBloodInventoryDto) {
+    return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory)
   }
 
   @Post(':id/blood-inventory')
-  @UseGuards(AuthGuard('jwtaccess'))
-  @ApiBearerAuth('access-token')
+  @Public()
   @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
@@ -129,8 +113,8 @@ export class HospitalController {
     type: Hospital
   })
   @ApiBody({ type: AddBloodInventoryDto })
-  @ResponseMessage('Blood inventory item added successfully')
-  addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto, @Request() req) {
-    return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item, req.user)
+  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto) {
+    return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item)
   }
 }

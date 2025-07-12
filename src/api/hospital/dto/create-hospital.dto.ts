@@ -17,26 +17,26 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { BloodType, BloodComponent } from '../../../constants/hospital.constant'
 
 export class ContactInfoDto {
-  @ApiProperty({ description: 'Hospital phone number' })
+  @ApiProperty({ description: 'Hospital phone number', example: '0123456789' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^(\+84|0)[0-9]{9,10}$/, { message: 'Invalid Vietnamese phone number format' })
   phone: string
 
-  @ApiPropertyOptional({ description: 'Hospital email address' })
+  @ApiPropertyOptional({ description: 'Hospital email address', example: 'info@hospital.com' })
   @IsOptional()
   @IsEmail()
   email?: string
 }
 
 export class CoordinatesDto {
-  @ApiProperty({ description: 'Latitude coordinate', minimum: -90, maximum: 90 })
+  @ApiProperty({ description: 'Latitude coordinate', minimum: -90, maximum: 90, example: 10.123456 })
   @IsNumber()
   @Min(-90)
   @Max(90)
   latitude: number
 
-  @ApiProperty({ description: 'Longitude coordinate', minimum: -180, maximum: 180 })
+  @ApiProperty({ description: 'Longitude coordinate', minimum: -180, maximum: 180, example: 105.123456 })
   @IsNumber()
   @Min(-180)
   @Max(180)
@@ -44,11 +44,11 @@ export class CoordinatesDto {
 }
 
 export class BloodInventoryItemDto {
-  @ApiProperty({ enum: BloodType, description: 'Blood type' })
+  @ApiProperty({ enum: BloodType, description: 'Blood type', example: BloodType.AB_POSITIVE })
   @IsEnum(BloodType)
   bloodType: BloodType
 
-  @ApiProperty({ enum: BloodComponent, description: 'Blood component type' })
+  @ApiProperty({ enum: BloodComponent, description: 'Blood component type', example: BloodComponent.RED_CELLS })
   @IsEnum(BloodComponent)
   component: BloodComponent
 
@@ -57,7 +57,7 @@ export class BloodInventoryItemDto {
   @Min(0)
   quantity: number
 
-  @ApiProperty({ description: 'Expiration date' })
+  @ApiProperty({ description: 'Expiration date', example: '2025-12-31T23:59:59Z' })
   @Transform(({ value }) => new Date(value))
   expiresAt: Date
 }

@@ -1,9 +1,10 @@
-import { IsOptional, IsString, IsEnum, IsBoolean, IsNumber, Min } from 'class-validator'
-import { Type, Transform } from 'class-transformer'
+import { IsOptional, IsString, IsEnum, IsBoolean } from 'class-validator'
+import { Transform } from 'class-transformer'
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { BloodType, BloodComponent, HospitalStatus } from '../../../constants/hospital.constant'
+import { BloodType, BloodComponent } from '../../../constants/hospital.constant'
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
-export class HospitalQueryDto {
+export class HospitalQueryDto extends PageOptionsDto {
   @ApiPropertyOptional({ description: 'Search term for name, address, description' })
   @IsOptional()
   @IsString()
@@ -24,27 +25,27 @@ export class HospitalQueryDto {
   @IsString()
   ward?: string
 
-  @ApiPropertyOptional({ enum: BloodType, description: 'Filter by available blood type' })
+  @ApiPropertyOptional({
+    enum: BloodType,
+    description: 'Filter by available blood type',
+    example: BloodType.AB_POSITIVE
+  })
   @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(BloodType)
   bloodType?: BloodType
 
-  @ApiPropertyOptional({ enum: BloodComponent, description: 'Filter by blood component' })
+  @ApiPropertyOptional({
+    enum: BloodComponent,
+    description: 'Filter by blood component',
+    example: BloodComponent.RED_CELLS
+  })
   @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(BloodComponent)
   component?: BloodComponent
 
-  @ApiPropertyOptional({
-    enum: HospitalStatus,
-    description: 'Filter by status (admin only)'
-  })
-  @IsOptional()
-  @IsEnum(HospitalStatus)
-  status?: HospitalStatus
-
-  @ApiPropertyOptional({ description: 'Filter by active status' })
+  @ApiPropertyOptional({ description: 'Filter by active status', example: true })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => {
@@ -53,36 +54,4 @@ export class HospitalQueryDto {
     return value
   })
   isActive?: boolean
-
-  @ApiPropertyOptional({ description: 'Page number', default: 1, minimum: 1 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  page?: number = 1
-
-  @ApiPropertyOptional({ description: 'Items per page', default: 10, minimum: 1 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  limit?: number = 10
-
-  @ApiPropertyOptional({
-    description: 'Sort field',
-    enum: ['name', 'createdAt', 'updatedAt'],
-    default: 'createdAt'
-  })
-  @IsOptional()
-  @IsString()
-  sortBy?: string = 'createdAt'
-
-  @ApiPropertyOptional({
-    description: 'Sort order',
-    enum: ['asc', 'desc'],
-    default: 'desc'
-  })
-  @IsOptional()
-  @IsEnum(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc' = 'desc'
 }

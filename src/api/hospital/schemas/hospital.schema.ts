@@ -1,11 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
-import {
-  HospitalStatus,
-  BloodType,
-  BloodComponent,
-  DEFAULT_OPERATING_HOURS
-} from '../../../constants/hospital.constant'
+import { BloodType, BloodComponent, DEFAULT_OPERATING_HOURS } from '../../../constants/hospital.constant'
+import { AbstractSchema } from '@database/schemas/abstract.schema'
 
 export type HospitalDocument = HydratedDocument<Hospital>
 
@@ -51,7 +47,7 @@ export class BloodInventoryItem {
 }
 
 @Schema({ timestamps: true, collection: 'hospitals' })
-export class Hospital {
+export class Hospital extends AbstractSchema {
   @Prop({ required: true })
   name: string
 
@@ -90,13 +86,6 @@ export class Hospital {
 
   @Prop({ default: true })
   isActive: boolean
-
-  @Prop({
-    enum: Object.values(HospitalStatus),
-    type: String,
-    default: HospitalStatus.PENDING
-  })
-  status: HospitalStatus
 
   @Prop()
   licenseNumber?: string
@@ -150,4 +139,4 @@ export const HospitalSchema = SchemaFactory.createForClass(Hospital)
 HospitalSchema.index({ name: 'text', address: 'text', description: 'text' })
 HospitalSchema.index({ province: 1, district: 1, ward: 1 })
 HospitalSchema.index({ 'coordinates.latitude': 1, 'coordinates.longitude': 1 })
-HospitalSchema.index({ status: 1, isActive: 1, isDeleted: 1 })
+HospitalSchema.index({ isActive: 1, isDeleted: 1 })
