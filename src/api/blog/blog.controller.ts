@@ -26,6 +26,7 @@ export class BlogController {
   @ApiQuery({ type: ListBlogReqDto })
   @ResponseMessage(RESPONSE_MESSAGES.BLOG.LIST)
   findAll(@Query() listBlogReqDto: ListBlogReqDto) {
+    console.log(`listBlogDto at blog.controller.ts is: `, listBlogReqDto)
     return this.blogService.findAll(listBlogReqDto)
   }
 

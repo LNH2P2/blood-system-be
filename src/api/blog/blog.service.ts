@@ -3,7 +3,7 @@ import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
 import { Blog, BlogDocument } from './schemas/blog.schema'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, FilterQuery } from 'mongoose'
 import { ListBlogReqDto } from './dto/list-blog.req.dto'
 import { PaginationUtil } from '@utils/pagination.util'
 import { BlogStatus } from './blog.constants'
@@ -17,17 +17,64 @@ export class BlogService {
   }
 
   async findAll(listBlogReqDto: ListBlogReqDto) {
-    // Get paginated results
+    // Build filter object based on query parameters
+    const filter: FilterQuery<BlogDocument> = {}
+
+    // Status filter
+    if (listBlogReqDto.status) {
+      filter.status = listBlogReqDto.status
+    }
+
+    // Date range filters
+    if (listBlogReqDto.createdFrom || listBlogReqDto.createdTo) {
+      filter.createdAt = {}
+      if (listBlogReqDto.createdFrom) {
+        filter.createdAt.$gte = new Date(listBlogReqDto.createdFrom)
+      }
+      if (listBlogReqDto.createdTo) {
+        filter.createdAt.$lte = new Date(listBlogReqDto.createdTo)
+      }
+    }
+
+    if (listBlogReqDto.updatedFrom || listBlogReqDto.updatedTo) {
+      filter.updatedAt = {}
+      if (listBlogReqDto.updatedFrom) {
+        filter.updatedAt.$gte = new Date(listBlogReqDto.updatedFrom)
+      }
+      if (listBlogReqDto.updatedTo) {
+        filter.updatedAt.$lte = new Date(listBlogReqDto.updatedTo)
+      }
+    }
+
+    // View count filters
+    if (listBlogReqDto.viewCountMin !== undefined || listBlogReqDto.viewCountMax !== undefined) {
+      filter.viewCount = {}
+      if (listBlogReqDto.viewCountMin !== undefined) {
+        filter.viewCount.$gte = listBlogReqDto.viewCountMin
+      }
+      if (listBlogReqDto.viewCountMax !== undefined) {
+        filter.viewCount.$lte = listBlogReqDto.viewCountMax
+      }
+    }
+
+    // Determine sort field
+    const sortField = listBlogReqDto.sortBy || 'createdAt'
+
+    // Get paginated results with enhanced filtering
     const paginatedResult = await PaginationUtil.paginate({
       model: this.blogModel,
       pageOptions: listBlogReqDto,
       searchFields: ['title', 'summary', 'content'],
-      sortField: 'createdAt',
-      filter: {}
+      sortField,
+      filter
     })
 
-    // Get status counts using aggregation
+    // Get status counts using aggregation (with same filters except status)
+    const statusCountFilter = { ...filter }
+    delete statusCountFilter.status // Remove status filter for counting all statuses
+
     const statusCounts = await this.blogModel.aggregate([
+      ...(Object.keys(statusCountFilter).length > 0 ? [{ $match: statusCountFilter }] : []),
       {
         $group: {
           _id: '$status',
@@ -36,8 +83,8 @@ export class BlogService {
       }
     ])
 
-    // Get the latest updated blog
-    const latestBlog = await this.blogModel.findOne().sort({ updatedAt: -1 }).select('updatedAt').exec()
+    // Get the latest updated blog (with same filters)
+    const latestBlog = await this.blogModel.findOne(filter).sort({ updatedAt: -1 }).select('updatedAt').exec()
 
     // Initialize counts for all statuses
     const statusCountsMap = {
@@ -58,7 +105,18 @@ export class BlogService {
     return {
       ...paginatedResult,
       statusCounts: statusCountsMap,
-      latestUpdatedAt: latestBlog?.updatedAt || null
+      latestUpdatedAt: latestBlog?.updatedAt || null,
+      appliedFilters: {
+        status: listBlogReqDto.status,
+        createdFrom: listBlogReqDto.createdFrom,
+        createdTo: listBlogReqDto.createdTo,
+        updatedFrom: listBlogReqDto.updatedFrom,
+        updatedTo: listBlogReqDto.updatedTo,
+        viewCountMin: listBlogReqDto.viewCountMin,
+        viewCountMax: listBlogReqDto.viewCountMax,
+        sortBy: sortField,
+        searchQuery: listBlogReqDto.q
+      }
     }
   }
 
