@@ -1,10 +1,3 @@
-export enum HospitalStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  SUSPENDED = 'suspended'
-}
-
 export enum BloodType {
   A_POSITIVE = 'A+',
   A_NEGATIVE = 'A-',

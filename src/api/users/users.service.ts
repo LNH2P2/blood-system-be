@@ -95,9 +95,16 @@ export class UsersService {
 
     const totalItems = await this.userModel.find(filter).countDocuments()
     const totalPages = Math.ceil(totalItems / defaultLimit)
+    console.log('filer:', filter)
 
     const result = await this.userModel
-      .find(filter)
+      .find({
+        $or: [
+          { fullName: { $regex: qs, $options: 'i' } },
+          { email: { $regex: qs, $options: 'i' } },
+          { phoneNumber: { $regex: qs, $options: 'i' } }
+        ]
+      })
       .skip(offset)
       .limit(defaultLimit)
       .sort(sort as any)

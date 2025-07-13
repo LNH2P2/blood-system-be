@@ -15,14 +15,14 @@ module.exports = {
         'test', // Viết test
         'revert', // Revert lại commit trước đó
         'ci', // Thay đổi cấu hình CI/CD
-        'build', // Build tệp tin
-      ],
+        'build' // Build tệp tin
+      ]
     ],
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
     'scope-empty': [1, 'never'],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
-    'header-max-length': [2, 'always', 72],
-  },
-};
+    'header-max-length': [2, 'always', 100] // Tăng từ 72 lên 100 ký tự
+  }
+}

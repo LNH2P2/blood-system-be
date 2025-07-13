@@ -9,11 +9,11 @@ import { Public } from '@decorators/public.decorator'
 import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
 
 @Controller('donation-requests')
+@Public()
 export class DonationRequestController {
   constructor(private readonly donationRequestService: DonationRequestService) {}
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create donation request' })
   @ApiOkResponse({
     description: 'Donation request created successfully'
@@ -25,7 +25,6 @@ export class DonationRequestController {
   }
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get list donation request of user ' })
   @ApiOkResponse({
     description: 'Get list donation request successfully'
@@ -33,9 +32,18 @@ export class DonationRequestController {
   @ApiQuery({ type: ListDonationReqDto })
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
   findAll(@Query() listDonationReqDto: ListDonationReqDto, @Req() req: any) {
-    // console.log('req.user', req.user)
+    console.log('req.user', req.user)
     // TODO: get userId from req.user
-    return this.donationRequestService.findAll('REQ-20250603-003', listDonationReqDto)
+    return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
+  }
+
+  @Get('findAllHospital')
+  @ApiOperation({ summary: 'Get all donation requests for hospital (for hospital dashboard)' })
+  @ApiQuery({ type: ListDonationReqDto })
+  @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.LIST)
+  findAllHospital(@Query() listDonationReqDto: ListDonationReqDto) {
+    console.log('listDonationReqDto', listDonationReqDto)
+    return this.donationRequestService.findAllHospital(listDonationReqDto)
   }
 
   @Get(':id')
@@ -47,12 +55,18 @@ export class DonationRequestController {
   @Patch(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
-    return this.donationRequestService.update(+id, updateDonationRequestDto)
+    return this.donationRequestService.update(id, updateDonationRequestDto)
+  }
+
+  @Get('debug/hospitals')
+  @ApiOperation({ summary: 'Debug: List hospitals' })
+  listHospitals() {
+    return this.donationRequestService.listHospitals()
   }
 
   @Delete(':id')
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.DELETED)
   remove(@Param('id') id: string) {
-    return this.donationRequestService.remove(+id)
+    return this.donationRequestService.remove(id)
   }
 }
