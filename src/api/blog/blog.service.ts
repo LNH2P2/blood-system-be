@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
 import { Blog, BlogDocument } from './schemas/blog.schema'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, FilterQuery } from 'mongoose'
+import { Model, FilterQuery, isValidObjectId, Types } from 'mongoose'
 import { ListBlogReqDto } from './dto/list-blog.req.dto'
 import { PaginationUtil } from '@utils/pagination.util'
 import { BlogStatus } from './blog.constants'
@@ -12,8 +12,13 @@ import { BlogStatus } from './blog.constants'
 export class BlogService {
   constructor(@InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>) {}
 
-  create(createBlogDto: CreateBlogDto) {
-    return this.blogModel.create(createBlogDto)
+  async create(createBlogDto: CreateBlogDto) {
+    try {
+      const blog = await this.blogModel.create(createBlogDto)
+      return blog
+    } catch (error) {
+      throw new BadRequestException('Failed to create blog')
+    }
   }
 
   async findAll(listBlogReqDto: ListBlogReqDto) {
@@ -120,15 +125,80 @@ export class BlogService {
     }
   }
 
-  findOne(id: string) {
-    return this.blogModel.findById(id)
+  async findOne(id: string) {
+    // Validate ObjectId
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('Invalid blog ID format')
+    }
+
+    // Convert string to ObjectId
+    const objectId = new Types.ObjectId(id)
+    const blog = await this.blogModel.findById(objectId)
+
+    if (!blog) {
+      throw new NotFoundException(`Blog with ID ${id} not found`)
+    }
+
+    return blog
   }
 
-  update(id: string, updateBlogDto: UpdateBlogDto) {
-    return this.blogModel.findByIdAndUpdate(id, updateBlogDto, { new: true })
+  async update(id: string, updateBlogDto: UpdateBlogDto) {
+    // Validate ObjectId
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('Invalid blog ID format')
+    }
+
+    // Convert string to ObjectId
+    const objectId = new Types.ObjectId(id)
+    const blog = await this.blogModel.findByIdAndUpdate(objectId, updateBlogDto, {
+      new: true,
+      runValidators: true
+    })
+
+    if (!blog) {
+      throw new NotFoundException(`Blog with ID ${id} not found`)
+    }
+
+    return blog
   }
 
-  remove(id: string) {
-    return this.blogModel.findByIdAndDelete(id)
+  async remove(id: string) {
+    console.log('Before deleting blog ID:', id)
+
+    // Validate ObjectId
+    if (!isValidObjectId(id)) {
+      console.log('Invalid ObjectId format:', id)
+      throw new BadRequestException('Invalid blog ID format')
+    }
+
+    // Convert string to ObjectId
+    const objectId = new Types.ObjectId(id)
+
+    // Check if blog exists first
+    const existingBlog = await this.blogModel.findById(objectId)
+    if (!existingBlog) {
+      console.log('Blog not found for deletion:', id)
+      throw new NotFoundException(`Blog with ID ${id} not found`)
+    }
+
+    console.log('Found blog to delete:', { id: existingBlog._id, title: existingBlog.title })
+
+    // Delete the blog
+    const deletedBlog = await this.blogModel.findByIdAndDelete(objectId)
+
+    if (!deletedBlog) {
+      console.log('Failed to delete blog:', id)
+      throw new BadRequestException('Failed to delete blog')
+    }
+
+    console.log('Successfully deleted blog:', { id: deletedBlog._id, title: deletedBlog.title })
+
+    return {
+      message: 'Blog deleted successfully',
+      deletedBlog: {
+        id: deletedBlog._id,
+        title: deletedBlog.title
+      }
+    }
   }
 }
