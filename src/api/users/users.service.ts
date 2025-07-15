@@ -33,7 +33,6 @@ export class UsersService {
 
       // Kiểm tra xem người dùng có được tạo bởi admin hay không
       const isAdminCreate = createUserDto.isCreatedBy === IsCreatedBy.system
-
       const createdUser = new this.userModel({
         // ✅ Thông tin cá nhân
         email: createUserDto.email,
@@ -45,7 +44,7 @@ export class UsersService {
         gender: createUserDto.gender,
         dateOfBirth: createUserDto.dateOfBirth,
         address: [createUserDto.address],
-        bloodTypeId: createUserDto.bloodTypeId || null,
+        bloodType: createUserDto.bloodType || null,
 
         // ✅ Tài khoản
         role: createUserDto.role,
@@ -85,47 +84,22 @@ export class UsersService {
     }
   }
 
-  async findAll(currentPage: number, limit: number, qs: string): Promise<FindAllResult<User>> {
-    const { filter, sort, population } = aqp(qs)
-    delete filter.current
-    delete filter.limit
+  async findAll(current = 1, limit = 10, qs = ''): Promise<FindAllResult<User>> {
+    const { filter = {}, sort, projection = '' } = aqp(qs)
 
-    const offset = (currentPage - 1) * limit
-    const defaultLimit = limit || 10
+    const skip = (current - 1) * limit
+    const total = await this.userModel.countDocuments(filter)
+    const pages = Math.max(1, Math.ceil(total / limit))
 
-    const totalItems = await this.userModel.find(filter).countDocuments()
-    const totalPages = Math.ceil(totalItems / defaultLimit)
-    // console.log('filer:', filter)
+    const query = this.userModel.find(filter).skip(skip).limit(limit).select(`${projection} -password -refreshTokens`)
+    if (sort) query.sort(sort as any) // sửa lỗi sort('')
 
-    const result = await this.userModel
-      .find({
-        $or: [
-          { fullName: { $regex: qs, $options: 'i' } },
-          { email: { $regex: qs, $options: 'i' } },
-          { phoneNumber: { $regex: qs, $options: 'i' } }
-        ]
-      })
-      .skip(offset)
-      .limit(defaultLimit)
-      .sort(sort as any)
-      .select('-password -refreshTokens')
-      .populate(population)
-      // .populate({ path: 'donationHistories', select: { name: 1, _id: 1 } })
-      .exec()
+    const result = await query.exec()
 
-    const response: FindAllResult<User> = {
+    return {
       message: RESPONSE_MESSAGES.USER_MESSAGE.GET_ALL_SUCCESS,
-      data: {
-        meta: {
-          current: currentPage,
-          limit: defaultLimit,
-          pages: totalPages,
-          total: totalItems
-        },
-        result
-      }
+      data: { meta: { current, limit, pages, total }, result }
     }
-    return response
   }
 
   async findOne(id: string) {
@@ -157,7 +131,6 @@ export class UsersService {
       }
       ValidateObjectId(id)
       await checkUserWithId(id, this.userModel)
-
       if (updateUserDto.password) {
         throw new ValidationException(ErrorCode.E005, RESPONSE_MESSAGES.USER_MESSAGE.CAN_NOT_CHANGE_PASSWORD)
       }
