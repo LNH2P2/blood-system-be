@@ -35,7 +35,6 @@ export class UsersController {
   }
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all users' })
   @ApiOkResponse({
     description: 'List of users',
@@ -60,6 +59,7 @@ export class UsersController {
     return this.usersService.findOne(id)
   }
 
+  @Public()
   @ApiOperation({ summary: 'Update a user by Id' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({

@@ -117,10 +117,10 @@ export class CreateUserDto {
   @Type(() => AddressDto)
   address: AddressDto
 
-  @ApiProperty({ example: 'jlkr2t453gjdlskajgdiosarj32', required: false })
+  @ApiProperty({ example: 'A+', required: false })
   @IsOptional()
   @IsString()
-  bloodTypeId?: string
+  bloodType: string
 
   @ApiProperty({ example: UserRole.Member, enum: UserRole, required: true })
   @IsEnum(UserRole)
