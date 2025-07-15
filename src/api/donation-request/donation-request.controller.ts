@@ -37,6 +37,7 @@ export class DonationRequestController {
     return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
   }
 
+  //Admin, staff
   @Get('findAllHospital')
   @ApiOperation({ summary: 'Get all donation requests for hospital (for hospital dashboard)' })
   @ApiQuery({ type: ListDonationReqDto })
