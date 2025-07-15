@@ -1,6 +1,7 @@
 import { RolesGuard } from '@api/auth/strategies/role.strategy'
 import { PaginationQueryDto } from '@common/dto/pagination/pagination.query.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
+// import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
@@ -21,6 +22,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Public()
   @ApiOperation({ summary: 'Create user' })
   @ApiResponse({
     status: 201,

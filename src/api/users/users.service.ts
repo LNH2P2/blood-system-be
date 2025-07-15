@@ -95,7 +95,7 @@ export class UsersService {
 
     const totalItems = await this.userModel.find(filter).countDocuments()
     const totalPages = Math.ceil(totalItems / defaultLimit)
-    console.log('filer:', filter)
+    // console.log('filer:', filter)
 
     const result = await this.userModel
       .find({
