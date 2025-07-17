@@ -66,21 +66,40 @@ export class HospitalService {
         }
       }
 
-      const hospital = new this.hospitalModel({
-        ...createHospitalDto
-      })
+      let savedBloodInventoryItems: any[] = []
 
-      const savedHospital = await hospital.save()
-
-      // Save blood inventory items to separate collection if provided
+      // Create blood inventory items in separate collection first if provided
       if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
         const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
           ...item,
-          hospitalId: savedHospital._id,
+          hospitalId: null, // Will be set after hospital creation
           expiresAt: new Date(item.expiresAt)
         }))
 
-        await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+      }
+
+      // Create hospital with blood inventory items that have the same _id
+      const hospitalData = {
+        ...createHospitalDto,
+        bloodInventory:
+          savedBloodInventoryItems.length > 0 ? savedBloodInventoryItems : createHospitalDto.bloodInventory
+      }
+
+      const hospital = new this.hospitalModel(hospitalData)
+      const savedHospital = await hospital.save()
+
+      // Update the hospitalId in the blood inventory items if they exist
+      if (savedBloodInventoryItems.length > 0) {
+        await this.bloodInventoryItemModel.updateMany(
+          { _id: { $in: savedBloodInventoryItems.map((item) => item._id) } },
+          { $set: { hospitalId: savedHospital._id } }
+        )
+
+        // Update the hospital's bloodInventory with the correct hospitalId
+        await this.hospitalModel.findByIdAndUpdate(savedHospital._id, {
+          $set: { bloodInventory: savedBloodInventoryItems.map((item) => ({ ...item, hospitalId: savedHospital._id })) }
+        })
       }
 
       return savedHospital
