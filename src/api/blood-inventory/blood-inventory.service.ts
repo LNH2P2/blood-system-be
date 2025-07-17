@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
+import { InjectModel, Schema } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { CreateBloodInventoryDto } from './dto/create-blood-inventory.dto'
 import { UpdateBloodInventoryDto } from './dto/update-blood-inventory.dto'
-import { BloodInventoryItem, BloodInventoryItemDocument } from './schemas/ blood-inventory-item.schema'
+import { BloodInventoryItem, BloodInventoryItemDocument } from './schemas/blood-inventory-item.schema'
 import { Hospital, HospitalDocument } from '@api/hospital/schemas/hospital.schema'
 import { ValidateObjectId } from '@exceptions/validattion.exception'
 import { PaginationUtil } from '@utils/pagination.util'
@@ -13,9 +13,9 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 export class BloodInventoryService {
   constructor(
     @InjectModel(BloodInventoryItem.name)
-    private bloodInventoryModel: Model<BloodInventoryItemDocument>,
+    private readonly bloodInventoryModel: Model<BloodInventoryItemDocument>,
     @InjectModel(Hospital.name)
-    private hospitalModel: Model<HospitalDocument>
+    private readonly hospitalModel: Model<HospitalDocument>
   ) {}
 
   async create(createBloodInventoryDto: CreateBloodInventoryDto) {
@@ -41,7 +41,7 @@ export class BloodInventoryService {
     const inventoryData = {
       ...item,
       expiresAt: expirationDate,
-      hospitalId: new Types.ObjectId(item.hospitalId)
+      hospitalId: item.hospitalId
     }
 
     const bloodInventoryItem = new this.bloodInventoryModel(inventoryData)

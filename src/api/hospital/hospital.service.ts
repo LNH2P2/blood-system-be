@@ -7,17 +7,22 @@ import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { ValidateObjectId } from '../../exceptions/validattion.exception'
-import { BloodInventoryItem } from './interfaces/hospital.interface'
 import { PaginationUtil } from '../../utils/pagination.util'
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
+import {
+  BloodInventoryItem,
+  BloodInventoryItemDocument
+} from '@api/blood-inventory/schemas/blood-inventory-item.schema'
 
 @Injectable()
 export class HospitalService {
   constructor(
     @InjectModel(Hospital.name)
-    private hospitalModel: Model<HospitalDocument>,
+    private readonly hospitalModel: Model<HospitalDocument>,
     @InjectModel(HospitalStaff.name)
-    private hospitalStaffModel: Model<HospitalStaffDocument>
+    private readonly hospitalStaffModel: Model<HospitalStaffDocument>,
+    @InjectModel(BloodInventoryItem.name)
+    private readonly bloodInventoryItemModel: Model<BloodInventoryItemDocument>
   ) {}
 
   async create(createHospitalDto: CreateHospitalDto): Promise<Hospital> {
@@ -65,7 +70,20 @@ export class HospitalService {
         ...createHospitalDto
       })
 
-      return await hospital.save()
+      const savedHospital = await hospital.save()
+
+      // Save blood inventory items to separate collection if provided
+      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
+        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
+          ...item,
+          hospitalId: savedHospital._id,
+          expiresAt: new Date(item.expiresAt)
+        }))
+
+        await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+      }
+
+      return savedHospital
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ForbiddenException) {
         throw error

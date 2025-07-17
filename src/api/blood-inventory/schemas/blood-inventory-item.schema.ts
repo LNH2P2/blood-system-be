@@ -5,7 +5,7 @@ import { AbstractSchema } from '@database/schemas/abstract.schema'
 
 export type BloodInventoryItemDocument = HydratedDocument<BloodInventoryItem>
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'blood_inventory_item' })
 export class BloodInventoryItem extends AbstractSchema {
   @Prop({
     required: true,

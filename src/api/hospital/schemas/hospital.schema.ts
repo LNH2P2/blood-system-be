@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
 import { DEFAULT_OPERATING_HOURS } from '../../../constants/hospital.constant'
 import { AbstractSchema } from '@database/schemas/abstract.schema'
-import { BloodInventoryItem } from '@api/blood-inventory/schemas/ blood-inventory-item.schema'
+import { BloodInventoryItem } from '@api/blood-inventory/schemas/blood-inventory-item.schema'
 
 export type HospitalDocument = HydratedDocument<Hospital>
 
