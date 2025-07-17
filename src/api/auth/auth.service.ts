@@ -321,6 +321,7 @@ export class AuthService {
         email: user.email,
         username: user.username,
         image: user.image,
+        hospitalId: user.hospitalId,
         role: user.role
       })
 
