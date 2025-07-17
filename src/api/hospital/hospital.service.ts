@@ -18,8 +18,6 @@ export class HospitalService {
   constructor(
     @InjectModel(Hospital.name)
     private readonly hospitalModel: Model<HospitalDocument>,
-    @InjectModel(HospitalStaff.name)
-    private readonly hospitalStaffModel: Model<HospitalStaffDocument>,
     @InjectModel(BloodInventoryItem.name)
     private readonly bloodInventoryItemModel: Model<BloodInventoryItemDocument>
   ) {}
