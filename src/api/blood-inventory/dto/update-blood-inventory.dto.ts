@@ -1,16 +1,16 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import { CreateBloodInventoryDto } from './create-blood-inventory.dto'
-import { BloodInventoryItemDto } from '@api/hospital/dto/create-hospital.dto'
-import { IsArray, ValidateNested } from 'class-validator'
+import { CreateBloodInventoryItemDto } from './create-blood-inventory.dto'
+import { ValidateNested } from 'class-validator'
 import { Type } from 'class-transformer'
 
-export class UpdateBloodInventoryDto extends PartialType(CreateBloodInventoryDto) {
+export class UpdateBloodInventoryItemDto extends PartialType(CreateBloodInventoryItemDto) {}
+
+export class UpdateBloodInventoryDto {
   @ApiProperty({
-    type: [BloodInventoryItemDto],
-    description: 'Blood inventory items to update'
+    type: UpdateBloodInventoryItemDto,
+    description: 'Blood inventory item to update'
   })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => BloodInventoryItemDto)
-  bloodInventory: BloodInventoryItemDto[]
+  @ValidateNested()
+  @Type(() => UpdateBloodInventoryItemDto)
+  item: UpdateBloodInventoryItemDto
 }

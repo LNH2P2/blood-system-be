@@ -1,26 +1,153 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model, Types } from 'mongoose'
 import { CreateBloodInventoryDto } from './dto/create-blood-inventory.dto'
 import { UpdateBloodInventoryDto } from './dto/update-blood-inventory.dto'
+import { BloodInventoryItem, BloodInventoryItemDocument } from './schemas/ blood-inventory-item.schema'
+import { Hospital, HospitalDocument } from '@api/hospital/schemas/hospital.schema'
+import { ValidateObjectId } from '@exceptions/validattion.exception'
+import { PaginationUtil } from '@utils/pagination.util'
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
 @Injectable()
 export class BloodInventoryService {
-  create(createBloodInventoryDto: CreateBloodInventoryDto) {
-    return 'This action adds a new bloodInventory'
+  constructor(
+    @InjectModel(BloodInventoryItem.name)
+    private bloodInventoryModel: Model<BloodInventoryItemDocument>,
+    @InjectModel(Hospital.name)
+    private hospitalModel: Model<HospitalDocument>
+  ) {}
+
+  async create(createBloodInventoryDto: CreateBloodInventoryDto) {
+    const { item } = createBloodInventoryDto
+
+    // Validate hospital exists
+    const hospital = await this.hospitalModel.findById(item.hospitalId)
+    if (!hospital) {
+      throw new NotFoundException('Hospital not found')
+    }
+
+    // Validate expiration date
+    const expirationDate = new Date(item.expiresAt)
+    if (isNaN(expirationDate.getTime())) {
+      throw new BadRequestException('Invalid expiration date')
+    }
+
+    if (expirationDate <= new Date()) {
+      throw new BadRequestException('Expiration date must be in the future')
+    }
+
+    // Convert string to Date for storage
+    const inventoryData = {
+      ...item,
+      expiresAt: expirationDate,
+      hospitalId: new Types.ObjectId(item.hospitalId)
+    }
+
+    const bloodInventoryItem = new this.bloodInventoryModel(inventoryData)
+    return await bloodInventoryItem.save()
   }
 
-  findAll() {
-    return `This action returns all bloodInventory`
+  async findAll(query?: PageOptionsDto) {
+    if (query) {
+      return await PaginationUtil.paginate({
+        model: this.bloodInventoryModel,
+        pageOptions: query,
+        sortField: 'createdAt',
+        populate: [{ path: 'hospitalId', select: 'name address' }]
+      })
+    }
+
+    return await this.bloodInventoryModel.find().populate('hospitalId', 'name address').sort({ createdAt: -1 }).exec()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} bloodInventory`
+  async findByHospital(hospitalId: string) {
+    ValidateObjectId(hospitalId)
+
+    const hospital = await this.hospitalModel.findById(hospitalId)
+    if (!hospital) {
+      throw new NotFoundException('Hospital not found')
+    }
+
+    return await this.bloodInventoryModel
+      .find({ hospitalId })
+      .populate('hospitalId', 'name address')
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
-  update(id: number, updateBloodInventoryDto: UpdateBloodInventoryDto) {
-    return `This action updates a #${id} bloodInventory`
+  async findOne(id: string) {
+    ValidateObjectId(id)
+
+    const bloodInventoryItem = await this.bloodInventoryModel.findById(id).populate('hospitalId', 'name address').exec()
+
+    if (!bloodInventoryItem) {
+      throw new NotFoundException('Blood inventory item not found')
+    }
+
+    return bloodInventoryItem
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} bloodInventory`
+  async update(id: string, updateBloodInventoryDto: UpdateBloodInventoryDto) {
+    ValidateObjectId(id)
+
+    const existingItem = await this.bloodInventoryModel.findById(id)
+    if (!existingItem) {
+      throw new NotFoundException('Blood inventory item not found')
+    }
+
+    const updateData = { ...updateBloodInventoryDto.item }
+
+    // Validate expiration date if provided
+    if (updateData.expiresAt) {
+      const expirationDate = new Date(updateData.expiresAt)
+      if (isNaN(expirationDate.getTime())) {
+        throw new BadRequestException('Invalid expiration date')
+      }
+
+      if (expirationDate <= new Date()) {
+        throw new BadRequestException('Expiration date must be in the future')
+      }
+
+      updateData.expiresAt = expirationDate as any
+    }
+
+    // Validate hospital if provided
+    if (updateData.hospitalId) {
+      const hospital = await this.hospitalModel.findById(updateData.hospitalId)
+      if (!hospital) {
+        throw new NotFoundException('Hospital not found')
+      }
+      updateData.hospitalId = new Types.ObjectId(updateData.hospitalId) as any
+    }
+
+    const updatedItem = await this.bloodInventoryModel
+      .findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+      .populate('hospitalId', 'name address')
+      .exec()
+
+    return updatedItem
+  }
+
+  async remove(id: string) {
+    ValidateObjectId(id)
+
+    const result = await this.bloodInventoryModel.findByIdAndDelete(id)
+    if (!result) {
+      throw new NotFoundException('Blood inventory item not found')
+    }
+
+    return { message: 'Blood inventory item deleted successfully' }
+  }
+
+  async removeExpiredItems() {
+    const now = new Date()
+    const result = await this.bloodInventoryModel.deleteMany({
+      expiresAt: { $lt: now }
+    })
+
+    return {
+      message: `Removed ${result.deletedCount} expired blood inventory items`
+    }
   }
 }
