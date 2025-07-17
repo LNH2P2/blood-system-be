@@ -78,7 +78,7 @@ export class HospitalController {
     return this.hospitalService.findOne(id)
   }
 
-  @Patch(':id')
+  @Put(':id')
   @Public()
   @ApiOperation({ summary: 'Update hospital (Admin only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
