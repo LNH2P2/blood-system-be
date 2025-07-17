@@ -9,6 +9,7 @@ import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.
 import { PaginationUtil } from 'src/utils/pagination.util'
 import { ValidationException } from '@exceptions/validattion.exception'
 import { ErrorCode } from '@constants/error-code.constant'
+import { DonationRequestStatus } from '@constants/donation.constant'
 
 @Injectable()
 export class DonationRequestService {
@@ -80,5 +81,13 @@ export class DonationRequestService {
       filter,
       populate: { path: 'hospitalId' }
     })
+  }
+
+  async updateStatus(id: string, status: DonationRequestStatus) {
+    const updatedRequest = await this.donationMatchModel
+      .findByIdAndUpdate(id, { status }, { new: true })
+      .populate('hospitalId')
+
+    return updatedRequest
   }
 }

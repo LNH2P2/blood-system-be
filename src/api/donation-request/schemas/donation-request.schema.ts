@@ -25,8 +25,8 @@ export class DonationRequest {
   @Prop({ required: true })
   bloodType: string
 
-  @Prop({ required: true })
-  quantity: number
+  @Prop({ required: true, default: 100 })
+  quantity: number // Số lượng máu (ml)
 
   @Prop({ required: true, enum: DonationRequestPriority, default: DonationRequestPriority.NORMAL })
   priority: DonationRequestPriority

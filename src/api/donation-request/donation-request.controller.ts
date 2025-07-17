@@ -7,6 +7,7 @@ import { ResponseMessage } from '@decorators/response-message.decorator'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Public } from '@decorators/public.decorator'
 import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { DonationRequestStatus } from '@constants/donation.constant'
 
 @Controller('donation-requests')
 @Public()
@@ -57,6 +58,12 @@ export class DonationRequestController {
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
     return this.donationRequestService.update(id, updateDonationRequestDto)
+  }
+
+  @Patch(':id/status')
+  @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
+  updateStatus(@Param('id') id: string, @Body() updateStatusDto: { status: DonationRequestStatus }) {
+    return this.donationRequestService.updateStatus(id, updateStatusDto.status)
   }
 
   @Get('debug/hospitals')

@@ -1,7 +1,8 @@
 export enum DonationRequestStatus {
   SCHEDULED,
   COMPLETED,
-  CANCELLED
+  CANCELLED,
+  FAILED
 }
 
 export enum DonationComponent {
