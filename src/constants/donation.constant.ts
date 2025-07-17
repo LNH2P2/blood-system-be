@@ -26,5 +26,3 @@ export enum DonationRequestPriority {
   NORMAL = 'normal',
   URGENT = 'urgent'
 }
-
-
