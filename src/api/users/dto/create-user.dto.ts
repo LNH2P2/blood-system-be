@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
+import { Transform, Type } from 'class-transformer'
 import {
   IsBoolean,
   IsDate,
@@ -121,6 +121,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   bloodType: string
+
+  @ApiProperty({ example: '60c72b2f9b1e8d001c8e4f1a', required: false })
+  @IsOptional()
+  @Transform(({ value }) => new Types.ObjectId(value))
+  hospitalId: Types.ObjectId | null
 
   @ApiProperty({ example: UserRole.Member, enum: UserRole, required: true })
   @IsEnum(UserRole)
