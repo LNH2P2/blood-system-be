@@ -161,24 +161,16 @@ export class BloodInventoryService {
         // Add to new hospital
         await this.hospitalModel.findByIdAndUpdate(newHospitalId, { $push: { bloodInventory: embeddedItem } })
       } else {
-        // Update existing item in same hospital
-        await this.hospitalModel.findOneAndUpdate(
-          {
-            _id: oldHospitalId,
-            'bloodInventory.bloodType': existingItem.bloodType,
-            'bloodInventory.component': existingItem.component,
-            'bloodInventory.quantity': existingItem.quantity,
-            'bloodInventory.expiresAt': existingItem.expiresAt,
-            'bloodInventory.createdAt': existingItem.createdAt,
-            'bloodInventory.updatedAt': existingItem.updatedAt,
-            'bloodInventory.hospitalId': existingItem.hospitalId
-          },
-          {
-            $set: {
-              'bloodInventory.$': embeddedItem
-            }
+        // Update existing item in same hospital - remove old and add new
+        // First remove the old item using its _id
+        await this.hospitalModel.findByIdAndUpdate(oldHospitalId, {
+          $pull: {
+            bloodInventory: { _id: existingItem._id }
           }
-        )
+        })
+
+        // Then add the updated item
+        await this.hospitalModel.findByIdAndUpdate(oldHospitalId, { $push: { bloodInventory: embeddedItem } })
       }
     }
 
@@ -202,12 +194,7 @@ export class BloodInventoryService {
     // Sync with hospital collection - remove from embedded bloodInventory array
     await this.hospitalModel.findByIdAndUpdate(itemToDelete.hospitalId, {
       $pull: {
-        bloodInventory: {
-          bloodType: itemToDelete.bloodType,
-          component: itemToDelete.component,
-          quantity: itemToDelete.quantity,
-          expiresAt: itemToDelete.expiresAt
-        }
+        bloodInventory: { _id: itemToDelete._id }
       }
     })
 
@@ -231,12 +218,7 @@ export class BloodInventoryService {
     for (const expiredItem of expiredItems) {
       await this.hospitalModel.findByIdAndUpdate(expiredItem.hospitalId, {
         $pull: {
-          bloodInventory: {
-            bloodType: expiredItem.bloodType,
-            component: expiredItem.component,
-            quantity: expiredItem.quantity,
-            expiresAt: expiredItem.expiresAt
-          }
+          bloodInventory: { _id: expiredItem._id }
         }
       })
     }
