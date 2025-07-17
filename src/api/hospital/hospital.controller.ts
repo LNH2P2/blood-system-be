@@ -1,14 +1,13 @@
-import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common'
-import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { Public } from '../../decorators/public.decorator'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
 import { ResponseMessage } from '../../decorators/response-message.decorator'
-import { AddBloodInventoryDto, UpdateBloodInventoryDto } from './dto/blood-inventory.dto'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalService } from './hospital.service'
 import { Hospital } from './schemas/hospital.schema'
+import { Public } from '../../decorators/public.decorator'
+import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 
 @ApiTags('hospitals')
 @Controller('hospitals')
@@ -100,33 +99,33 @@ export class HospitalController {
     return this.hospitalService.findOne(id)
   }
 
-  @Put(':id/blood-inventory')
-  @Public()
-  @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Blood inventory updated successfully',
-    type: Hospital
-  })
-  @ApiBody({ type: UpdateBloodInventoryDto })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
-  updateBloodInventory(@Param('id') id: string, @Body() updateBloodInventoryDto: UpdateBloodInventoryDto) {
-    return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory)
-  }
+  // @Put(':id/blood-inventory')
+  // @Public()
+  // @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
+  // @ApiParam({ name: 'id', description: 'Hospital ID' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Blood inventory updated successfully',
+  //   type: Hospital
+  // })
+  // @ApiBody({ type: UpdateBloodInventoryDto })
+  // @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  // updateBloodInventory(@Param('id') id: string, @Body() updateBloodInventoryDto: UpdateBloodInventoryDto) {
+  //   return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory)
+  // }
 
-  @Post(':id/blood-inventory')
-  @Public()
-  @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Blood inventory item added successfully',
-    type: Hospital
-  })
-  @ApiBody({ type: AddBloodInventoryDto })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
-  addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto) {
-    return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item)
-  }
+  // @Post(':id/blood-inventory')
+  // @Public()
+  // @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
+  // @ApiParam({ name: 'id', description: 'Hospital ID' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Blood inventory item added successfully',
+  //   type: Hospital
+  // })
+  // @ApiBody({ type: AddBloodInventoryDto })
+  // @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  // addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto) {
+  //   return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item)
+  // }
 }

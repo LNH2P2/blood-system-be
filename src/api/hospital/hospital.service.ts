@@ -1,23 +1,28 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { ValidateObjectId } from '../../exceptions/validattion.exception'
-import { PaginationUtil } from '../../utils/pagination.util'
+import { Model, Types } from 'mongoose'
+import { Hospital, HospitalDocument } from './schemas/hospital.schema'
+import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
-import { BloodInventoryItem } from './interfaces/hospital.interface'
-import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
-import { Hospital, HospitalDocument } from './schemas/hospital.schema'
+import { ValidateObjectId } from '../../exceptions/validattion.exception'
+import { PaginationUtil } from '../../utils/pagination.util'
+import {
+  BloodInventoryItem,
+  BloodInventoryItemDocument
+} from '@api/blood-inventory/schemas/blood-inventory-item.schema'
 
 @Injectable()
 export class HospitalService {
   constructor(
     @InjectModel(Hospital.name)
-    private hospitalModel: Model<HospitalDocument>,
+    private readonly hospitalModel: Model<HospitalDocument>,
     @InjectModel(HospitalStaff.name)
-    private hospitalStaffModel: Model<HospitalStaffDocument>
+    private readonly hospitalStaffModel: Model<HospitalStaffDocument>,
+    @InjectModel(BloodInventoryItem.name)
+    private readonly bloodInventoryItemModel: Model<BloodInventoryItemDocument>
   ) {}
 
   async create(createHospitalDto: CreateHospitalDto): Promise<Hospital> {
@@ -36,19 +41,68 @@ export class HospitalService {
       if (createHospitalDto.bloodInventory) {
         const now = new Date()
         for (const item of createHospitalDto.bloodInventory) {
-          if (new Date(item.expiresAt) <= now) {
+          // Check if expiresAt is valid
+          if (!item.expiresAt) {
+            throw new BadRequestException(
+              `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+            )
+          }
+
+          const expirationDate = new Date(item.expiresAt)
+          if (isNaN(expirationDate.getTime())) {
+            throw new BadRequestException(
+              `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+            )
+          }
+
+          if (expirationDate <= now) {
             throw new BadRequestException(
               `Blood inventory item expires in the past: ${item.bloodType} ${item.component}`
             )
           }
+
+          // Convert string to Date object for storage
+          item.expiresAt = expirationDate as any
         }
       }
 
-      const hospital = new this.hospitalModel({
-        ...createHospitalDto
-      })
+      let savedBloodInventoryItems: any[] = []
 
-      return await hospital.save()
+      // Create blood inventory items in separate collection first if provided
+      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
+        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
+          ...item,
+          hospitalId: null, // Will be set after hospital creation
+          expiresAt: new Date(item.expiresAt)
+        }))
+
+        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+      }
+
+      // Create hospital with blood inventory items that have the same _id
+      const hospitalData = {
+        ...createHospitalDto,
+        bloodInventory:
+          savedBloodInventoryItems.length > 0 ? savedBloodInventoryItems : createHospitalDto.bloodInventory
+      }
+
+      const hospital = new this.hospitalModel(hospitalData)
+      const savedHospital = await hospital.save()
+
+      // Update the hospitalId in the blood inventory items if they exist
+      if (savedBloodInventoryItems.length > 0) {
+        await this.bloodInventoryItemModel.updateMany(
+          { _id: { $in: savedBloodInventoryItems.map((item) => item._id) } },
+          { $set: { hospitalId: savedHospital._id } }
+        )
+
+        // Update the hospital's bloodInventory with the correct hospitalId
+        await this.hospitalModel.findByIdAndUpdate(savedHospital._id, {
+          $set: { bloodInventory: savedBloodInventoryItems.map((item) => ({ ...item, hospitalId: savedHospital._id })) }
+        })
+      }
+
+      return savedHospital
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ForbiddenException) {
         throw error
@@ -124,7 +178,21 @@ export class HospitalService {
     if (updateHospitalDto.bloodInventory) {
       const now = new Date()
       for (const item of updateHospitalDto.bloodInventory) {
-        if (new Date(item.expiresAt) <= now) {
+        // Check if expiresAt is valid
+        if (!item.expiresAt) {
+          throw new BadRequestException(
+            `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+          )
+        }
+
+        const expirationDate = new Date(item.expiresAt)
+        if (isNaN(expirationDate.getTime())) {
+          throw new BadRequestException(
+            `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+          )
+        }
+
+        if (expirationDate <= now) {
           throw new BadRequestException(`Blood inventory item expires in the past: ${item.bloodType} ${item.component}`)
         }
       }
@@ -179,11 +247,40 @@ export class HospitalService {
     // Validate expiration dates
     const now = new Date()
     for (const item of bloodInventory) {
-      if (new Date(item.expiresAt) <= now) {
+      // Check if expiresAt is valid
+      if (!item.expiresAt) {
+        throw new BadRequestException(
+          `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+        )
+      }
+
+      const expirationDate = new Date(item.expiresAt)
+      if (isNaN(expirationDate.getTime())) {
+        throw new BadRequestException(
+          `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+        )
+      }
+
+      if (expirationDate <= now) {
         throw new BadRequestException(`Blood inventory item expires in the past: ${item.bloodType} ${item.component}`)
       }
     }
 
+    // First, remove all existing blood inventory items for this hospital from separate collection
+    await this.bloodInventoryItemModel.deleteMany({ hospitalId: id })
+
+    // Create new blood inventory items in separate collection
+    const bloodInventoryItems = bloodInventory.map((item) => ({
+      ...item,
+      hospitalId: new Types.ObjectId(id),
+      expiresAt: new Date(item.expiresAt)
+    }))
+
+    if (bloodInventoryItems.length > 0) {
+      await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+    }
+
+    // Update hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
@@ -206,12 +303,36 @@ export class HospitalService {
     ValidateObjectId(id)
 
     // Validate expiration date
-    if (new Date(bloodItem.expiresAt) <= new Date()) {
+    if (!bloodItem.expiresAt) {
+      throw new BadRequestException(
+        `Blood inventory item missing expiration date: ${bloodItem.bloodType} ${bloodItem.component}`
+      )
+    }
+
+    const expirationDate = new Date(bloodItem.expiresAt)
+    if (isNaN(expirationDate.getTime())) {
+      throw new BadRequestException(
+        `Blood inventory item has invalid expiration date: ${bloodItem.bloodType} ${bloodItem.component}`
+      )
+    }
+
+    if (expirationDate <= new Date()) {
       throw new BadRequestException(
         `Blood inventory item expires in the past: ${bloodItem.bloodType} ${bloodItem.component}`
       )
     }
 
+    // Create item in separate blood inventory collection
+    const bloodInventoryItemData = {
+      ...bloodItem,
+      hospitalId: new Types.ObjectId(id),
+      expiresAt: expirationDate
+    }
+
+    const newBloodInventoryItem = new this.bloodInventoryItemModel(bloodInventoryItemData)
+    await newBloodInventoryItem.save()
+
+    // Add to hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
