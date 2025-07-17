@@ -1,8 +1,12 @@
-import { Prop, Schema } from '@nestjs/mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { BloodComponent, BloodType } from '@constants/hospital.constant'
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
+import { AbstractSchema } from '@database/schemas/abstract.schema'
 
-@Schema({ _id: false })
-export class BloodInventoryItem {
+export type BloodInventoryItemDocument = HydratedDocument<BloodInventoryItem>
+
+@Schema({ timestamps: true })
+export class BloodInventoryItem extends AbstractSchema {
   @Prop({
     required: true,
     enum: Object.values(BloodType),
@@ -22,4 +26,17 @@ export class BloodInventoryItem {
 
   @Prop({ required: true, type: Date })
   expiresAt: Date
+
+  @Prop({
+    type: SchemaTypes.ObjectId,
+    ref: 'Hospital'
+  })
+  hospitalId: Types.ObjectId
 }
+
+export const BloodInventoryItemSchema = SchemaFactory.createForClass(BloodInventoryItem)
+
+// Index for efficient queries
+BloodInventoryItemSchema.index({ hospitalId: 1 })
+BloodInventoryItemSchema.index({ bloodType: 1, component: 1 })
+BloodInventoryItemSchema.index({ expiresAt: 1 })

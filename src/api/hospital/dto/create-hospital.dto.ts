@@ -10,7 +10,8 @@ import {
   ValidateNested,
   Min,
   Max,
-  Matches
+  Matches,
+  IsISO8601
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -46,19 +47,23 @@ export class CoordinatesDto {
 export class BloodInventoryItemDto {
   @ApiProperty({ enum: BloodType, description: 'Blood type', example: BloodType.AB_POSITIVE })
   @IsEnum(BloodType)
+  @IsNotEmpty()
   bloodType: BloodType
 
   @ApiProperty({ enum: BloodComponent, description: 'Blood component type', example: BloodComponent.RED_CELLS })
   @IsEnum(BloodComponent)
+  @IsNotEmpty()
   component: BloodComponent
 
-  @ApiProperty({ description: 'Quantity in units', minimum: 0 })
+  @ApiProperty({ description: 'Quantity in units', minimum: 0, example: 5 })
   @IsNumber()
   @Min(0)
+  @IsNotEmpty()
   quantity: number
 
   @ApiProperty({ description: 'Expiration date', example: '2025-12-31T23:59:59Z' })
-  @Transform(({ value }) => new Date(value))
+  @IsISO8601()
+  @IsNotEmpty()
   expiresAt: Date
 }
 

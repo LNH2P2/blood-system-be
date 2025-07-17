@@ -36,11 +36,28 @@ export class HospitalService {
       if (createHospitalDto.bloodInventory) {
         const now = new Date()
         for (const item of createHospitalDto.bloodInventory) {
-          if (new Date(item.expiresAt) <= now) {
+          // Check if expiresAt is valid
+          if (!item.expiresAt) {
+            throw new BadRequestException(
+              `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+            )
+          }
+
+          const expirationDate = new Date(item.expiresAt)
+          if (isNaN(expirationDate.getTime())) {
+            throw new BadRequestException(
+              `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+            )
+          }
+
+          if (expirationDate <= now) {
             throw new BadRequestException(
               `Blood inventory item expires in the past: ${item.bloodType} ${item.component}`
             )
           }
+
+          // Convert string to Date object for storage
+          item.expiresAt = expirationDate as any
         }
       }
 
@@ -124,7 +141,21 @@ export class HospitalService {
     if (updateHospitalDto.bloodInventory) {
       const now = new Date()
       for (const item of updateHospitalDto.bloodInventory) {
-        if (new Date(item.expiresAt) <= now) {
+        // Check if expiresAt is valid
+        if (!item.expiresAt) {
+          throw new BadRequestException(
+            `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+          )
+        }
+
+        const expirationDate = new Date(item.expiresAt)
+        if (isNaN(expirationDate.getTime())) {
+          throw new BadRequestException(
+            `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+          )
+        }
+
+        if (expirationDate <= now) {
           throw new BadRequestException(`Blood inventory item expires in the past: ${item.bloodType} ${item.component}`)
         }
       }
@@ -179,7 +210,21 @@ export class HospitalService {
     // Validate expiration dates
     const now = new Date()
     for (const item of bloodInventory) {
-      if (new Date(item.expiresAt) <= now) {
+      // Check if expiresAt is valid
+      if (!item.expiresAt) {
+        throw new BadRequestException(
+          `Blood inventory item missing expiration date: ${item.bloodType} ${item.component}`
+        )
+      }
+
+      const expirationDate = new Date(item.expiresAt)
+      if (isNaN(expirationDate.getTime())) {
+        throw new BadRequestException(
+          `Blood inventory item has invalid expiration date: ${item.bloodType} ${item.component}`
+        )
+      }
+
+      if (expirationDate <= now) {
         throw new BadRequestException(`Blood inventory item expires in the past: ${item.bloodType} ${item.component}`)
       }
     }
@@ -206,7 +251,20 @@ export class HospitalService {
     ValidateObjectId(id)
 
     // Validate expiration date
-    if (new Date(bloodItem.expiresAt) <= new Date()) {
+    if (!bloodItem.expiresAt) {
+      throw new BadRequestException(
+        `Blood inventory item missing expiration date: ${bloodItem.bloodType} ${bloodItem.component}`
+      )
+    }
+
+    const expirationDate = new Date(bloodItem.expiresAt)
+    if (isNaN(expirationDate.getTime())) {
+      throw new BadRequestException(
+        `Blood inventory item has invalid expiration date: ${bloodItem.bloodType} ${bloodItem.component}`
+      )
+    }
+
+    if (expirationDate <= new Date()) {
       throw new BadRequestException(
         `Blood inventory item expires in the past: ${bloodItem.bloodType} ${bloodItem.component}`
       )
