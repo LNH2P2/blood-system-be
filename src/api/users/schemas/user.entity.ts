@@ -44,6 +44,9 @@ export class User {
   @Prop()
   accountType: string
 
+  @Prop({ type: String, default: null })
+  bloodType: string | null
+
   // Dùng reference đến RefreshToken
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'RefreshToken' }], default: {} })
   refreshTokenId: Types.ObjectId

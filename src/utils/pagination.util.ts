@@ -1,15 +1,16 @@
-import { Model, Document, FilterQuery, SortOrder } from 'mongoose'
+import { Model, Document, FilterQuery, SortOrder, PopulateOptions } from 'mongoose'
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto'
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto'
 
 export interface PaginationOptions<T> {
-  model: Model<T>
+  model: Model<any>
   pageOptions: PageOptionsDto
   filter?: FilterQuery<T>
   searchFields?: string[]
   sortField?: string
   message?: string
+  populate?: PopulateOptions | (string | PopulateOptions)[]
 }
 
 export class PaginationUtil {
@@ -17,15 +18,15 @@ export class PaginationUtil {
    * Generic function to handle offset pagination for any MongoDB model
    * @param options - Configuration object for pagination
    * @returns Promise<OffsetPaginatedDto<T>>
-   */
-  static async paginate<T extends Document>(options: PaginationOptions<T>): Promise<OffsetPaginatedDto<T>> {
+   */ static async paginate<T extends Document>(options: PaginationOptions<T>): Promise<OffsetPaginatedDto<T>> {
     const {
       model,
       pageOptions,
       filter = {},
       searchFields = [],
       sortField = 'createdAt',
-      message = 'Data retrieved successfully'
+      message = 'Data retrieved successfully',
+      populate
     } = options
 
     const queryFilter: FilterQuery<T> = { ...filter }
@@ -41,12 +42,14 @@ export class PaginationUtil {
     const sortOrder: SortOrder = pageOptions.order === 'ASC' ? 1 : -1
     const sortOptions: { [key: string]: SortOrder } = { [sortField]: sortOrder }
 
-    const data = await model
-      .find(queryFilter)
-      .skip(pageOptions.offset)
-      .limit(pageOptions.limit)
-      .sort(sortOptions)
-      .exec()
+    let query = model.find(queryFilter).skip(pageOptions.offset).limit(pageOptions.limit).sort(sortOptions)
+
+    // Add populate if provided
+    if (populate) {
+      query = query.populate(populate)
+    }
+
+    const data = await query.exec()
 
     const meta = new OffsetPaginationDto(totalRecords, pageOptions)
 
