@@ -10,7 +10,8 @@ import {
   ValidateNested,
   Min,
   Max,
-  Matches
+  Matches,
+  IsDateString
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -58,7 +59,7 @@ export class BloodInventoryItemDto {
   quantity: number
 
   @ApiProperty({ description: 'Expiration date', example: '2025-12-31T23:59:59Z' })
-  @Transform(({ value }) => new Date(value))
+  @IsDateString()
   expiresAt: Date
 }
 
