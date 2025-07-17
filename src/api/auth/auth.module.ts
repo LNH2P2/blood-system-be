@@ -23,6 +23,15 @@ import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
       signOptions: { expiresIn: jwtConstants.expired_access }
     }),
     PassportModule
+  ],
+  exports: [
+    AuthService,
+    JwtModule.register({
+      global: true,
+      secret: jwtConstants.secret_access,
+      signOptions: { expiresIn: jwtConstants.expired_access }
+    }),
+    PassportModule
   ]
 })
 export class AuthModule {}

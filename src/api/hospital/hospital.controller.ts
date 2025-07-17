@@ -1,14 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
 import { ResponseMessage } from '../../decorators/response-message.decorator'
-import { HospitalService } from './hospital.service'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
-import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
-import { NearbyHospitalsQueryDto } from './dto/nearby-hospitals-query.dto'
+import { UpdateHospitalDto } from './dto/update-hospital.dto'
+import { HospitalService } from './hospital.service'
 import { Hospital } from './schemas/hospital.schema'
 import { Public } from '../../decorators/public.decorator'
-import { UpdateBloodInventoryDto, AddBloodInventoryDto } from './dto/blood-inventory.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 
 @ApiTags('hospitals')
@@ -29,7 +27,6 @@ export class HospitalController {
   create(@Body() createHospitalDto: CreateHospitalDto) {
     return this.hospitalService.create(createHospitalDto)
   }
-
   @Get()
   @Public()
   @ApiOperation({ summary: 'Get all hospitals with search and filter' })
@@ -37,32 +34,19 @@ export class HospitalController {
     description: 'List of hospitals',
     type: [Hospital]
   })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.LIST)
   findAll(@Query() query: HospitalQueryDto) {
     return this.hospitalService.findAll(query)
   }
 
-  @Get('nearby')
+  @Get('names')
   @Public()
-  @ApiOperation({ summary: 'Find nearby hospitals within radius' })
+  @ApiOperation({ summary: 'Get all hospitals only name' })
   @ApiOkResponse({
-    description: 'Nearby hospitals retrieved successfully',
+    description: 'List of hospitals',
     type: [Hospital]
   })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.NEARBY_HOSPITALS)
-  findNearby(@Query() query: NearbyHospitalsQueryDto) {
-    return this.hospitalService.findNearby(query.latitude, query.longitude, query.radius)
-  }
-
-  @Get('blood-inventory/summary')
-  @Public()
-  @ApiOperation({ summary: 'Get blood inventory summary across all hospitals' })
-  @ApiOkResponse({
-    description: 'Blood inventory summary retrieved successfully'
-  })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.BLOOD_SUMMARY)
-  getBloodInventorySummary() {
-    return this.hospitalService.getBloodInventorySummary()
+  findAllHospital() {
+    return this.hospitalService.getHospitalNames()
   }
 
   @Get(':id')
@@ -73,14 +57,13 @@ export class HospitalController {
     description: 'Hospital details',
     type: Hospital
   })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.FOUND)
   findOne(@Param('id') id: string) {
     return this.hospitalService.findOne(id)
   }
 
-  @Put(':id')
+  @Patch(':id')
   @Public()
-  @ApiOperation({ summary: 'Update hospital (Admin only)' })
+  @ApiOperation({ summary: 'Update hospital (Admin or Hospital Staff only)' })
   @ApiParam({ name: 'id', description: 'Hospital ID' })
   @ApiResponse({
     status: 200,
@@ -105,7 +88,6 @@ export class HospitalController {
   remove(@Param('id') id: string) {
     return this.hospitalService.remove(id)
   }
-
   @Get(':id/blood-inventory')
   @Public()
   @ApiOperation({ summary: 'Get hospital blood inventory' })
@@ -113,38 +95,37 @@ export class HospitalController {
   @ApiOkResponse({
     description: 'Blood inventory details'
   })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.BLOOD_INVENTORY_FOUND)
   getBloodInventory(@Param('id') id: string) {
     return this.hospitalService.findOne(id)
   }
 
-  @Put(':id/blood-inventory')
-  @Public()
-  @ApiOperation({ summary: 'Update hospital blood inventory (Staff only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Blood inventory updated successfully',
-    type: Hospital
-  })
-  @ApiBody({ type: UpdateBloodInventoryDto })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.UPDATE_BLOOD_INVENTORY)
-  updateBloodInventory(@Param('id') id: string, @Body() updateBloodInventoryDto: UpdateBloodInventoryDto) {
-    return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory)
-  }
+  // @Put(':id/blood-inventory')
+  // @Public()
+  // @ApiOperation({ summary: 'Update hospital blood inventory (Hospital Staff only)' })
+  // @ApiParam({ name: 'id', description: 'Hospital ID' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Blood inventory updated successfully',
+  //   type: Hospital
+  // })
+  // @ApiBody({ type: UpdateBloodInventoryDto })
+  // @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  // updateBloodInventory(@Param('id') id: string, @Body() updateBloodInventoryDto: UpdateBloodInventoryDto) {
+  //   return this.hospitalService.updateBloodInventory(id, updateBloodInventoryDto.bloodInventory)
+  // }
 
-  @Post(':id/blood-inventory')
-  @Public()
-  @ApiOperation({ summary: 'Add blood inventory item (Staff only)' })
-  @ApiParam({ name: 'id', description: 'Hospital ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Blood inventory item added successfully',
-    type: Hospital
-  })
-  @ApiBody({ type: AddBloodInventoryDto })
-  @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD_INVENTORY)
-  addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto) {
-    return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item)
-  }
+  // @Post(':id/blood-inventory')
+  // @Public()
+  // @ApiOperation({ summary: 'Add blood inventory item (Hospital Staff only)' })
+  // @ApiParam({ name: 'id', description: 'Hospital ID' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Blood inventory item added successfully',
+  //   type: Hospital
+  // })
+  // @ApiBody({ type: AddBloodInventoryDto })
+  // @ResponseMessage(RESPONSE_MESSAGES.HOSPITAL.ADD_BLOOD)
+  // addBloodInventory(@Param('id') id: string, @Body() addBloodInventoryDto: AddBloodInventoryDto) {
+  //   return this.hospitalService.addBloodInventory(id, addBloodInventoryDto.item)
+  // }
 }

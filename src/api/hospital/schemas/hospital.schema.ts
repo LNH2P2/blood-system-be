@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose'
-import { BloodType, BloodComponent, DEFAULT_OPERATING_HOURS } from '../../../constants/hospital.constant'
+import { DEFAULT_OPERATING_HOURS } from '../../../constants/hospital.constant'
 import { AbstractSchema } from '@database/schemas/abstract.schema'
+import { BloodInventoryItem } from '@api/blood-inventory/schemas/blood-inventory-item.schema'
 
 export type HospitalDocument = HydratedDocument<Hospital>
 
@@ -21,29 +22,6 @@ export class Coordinates {
 
   @Prop({ required: true, type: Number })
   longitude: number
-}
-
-@Schema({ _id: false })
-export class BloodInventoryItem {
-  @Prop({
-    required: true,
-    enum: Object.values(BloodType),
-    type: String
-  })
-  bloodType: BloodType
-
-  @Prop({
-    required: true,
-    enum: Object.values(BloodComponent),
-    type: String
-  })
-  component: BloodComponent
-
-  @Prop({ required: true, type: Number, min: 0 })
-  quantity: number
-
-  @Prop({ required: true, type: Date })
-  expiresAt: Date
 }
 
 @Schema({ timestamps: true, collection: 'hospitals' })
