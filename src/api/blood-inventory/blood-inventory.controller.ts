@@ -3,9 +3,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from 
 import { BloodInventoryService } from './blood-inventory.service'
 import { CreateBloodInventoryDto } from './dto/create-blood-inventory.dto'
 import { UpdateBloodInventoryDto } from './dto/update-blood-inventory.dto'
+import { ListBloodInventoryDto } from './dto/list-blood-inventory.req.dto'
 import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
+import { BloodType } from '@constants/hospital.constant'
 
 @ApiTags('blood-inventory')
 @Controller('blood-inventory')
@@ -26,7 +27,7 @@ export class BloodInventoryController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all blood inventory items with pagination' })
+  @ApiOperation({ summary: 'Get all blood inventory items with pagination and filters' })
   @ApiResponse({
     status: 200,
     description: 'List of blood inventory items'
@@ -34,8 +35,29 @@ export class BloodInventoryController {
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
   @ApiQuery({ name: 'q', required: false, type: String, description: 'Search query' })
+  @ApiQuery({
+    name: 'bloodType',
+    required: false,
+    enum: BloodType,
+    description: 'Filter by blood type'
+  })
+  @ApiQuery({
+    name: 'component',
+    required: false,
+    enum: ['WHOLE_BLOOD', 'RED_CELLS', 'PLATELETS', 'PLASMA', 'CRYOPRECIPITATE'],
+    description: 'Filter by blood component'
+  })
+  @ApiQuery({ name: 'province', required: false, type: String, description: 'Filter by province/city' })
+  @ApiQuery({ name: 'district', required: false, type: String, description: 'Filter by district' })
+  @ApiQuery({ name: 'ward', required: false, type: String, description: 'Filter by ward/commune' })
+  @ApiQuery({
+    name: 'address',
+    required: false,
+    type: String,
+    description: 'Filter by hospital address (partial match)'
+  })
   @ResponseMessage('Blood inventory items retrieved successfully')
-  findAll(@Query() query: PageOptionsDto) {
+  findAll(@Query() query: ListBloodInventoryDto) {
     return this.bloodInventoryService.findAll(query)
   }
 

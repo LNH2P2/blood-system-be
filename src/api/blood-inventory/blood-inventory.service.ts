@@ -3,6 +3,7 @@ import { InjectModel, Schema } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { CreateBloodInventoryDto } from './dto/create-blood-inventory.dto'
 import { UpdateBloodInventoryDto } from './dto/update-blood-inventory.dto'
+import { ListBloodInventoryDto } from './dto/list-blood-inventory.req.dto'
 import { BloodInventoryItem, BloodInventoryItemDocument } from './schemas/blood-inventory-item.schema'
 import { Hospital, HospitalDocument } from '@api/hospital/schemas/hospital.schema'
 import { ValidateObjectId } from '@exceptions/validattion.exception'
@@ -55,17 +56,138 @@ export class BloodInventoryService {
     return newBloodInventoryItem
   }
 
-  async findAll(query?: PageOptionsDto) {
-    if (query) {
+  async findAll(query?: ListBloodInventoryDto) {
+    if (!query) {
+      return await this.bloodInventoryModel.find().populate('hospitalId', 'name address').sort({ createdAt: -1 }).exec()
+    }
+
+    const { bloodType, component, province, district, ward, address, ...pageOptions } = query
+
+    // Build blood inventory filters
+    const bloodInventoryFilters: any = {}
+
+    if (bloodType) {
+      bloodInventoryFilters.bloodType = bloodType
+    }
+
+    if (component) {
+      bloodInventoryFilters.component = component
+    }
+
+    // If no hospital-related filters, use simple pagination
+    if (!province && !district && !ward && !address) {
       return await PaginationUtil.paginate({
         model: this.bloodInventoryModel,
-        pageOptions: query,
+        pageOptions: pageOptions as PageOptionsDto,
         sortField: 'createdAt',
-        populate: [{ path: 'hospitalId', select: 'name address' }]
+        filter: bloodInventoryFilters,
+        populate: [{ path: 'hospitalId', select: 'name address province district ward' }]
       })
     }
 
-    return await this.bloodInventoryModel.find().populate('hospitalId', 'name address').sort({ createdAt: -1 }).exec()
+    // Build hospital filters for aggregation
+    const hospitalFilters: any = {}
+
+    if (province) {
+      hospitalFilters.province = { $regex: province, $options: 'i' }
+    }
+
+    if (district) {
+      hospitalFilters.district = { $regex: district, $options: 'i' }
+    }
+
+    if (ward) {
+      hospitalFilters.ward = { $regex: ward, $options: 'i' }
+    }
+
+    if (address) {
+      hospitalFilters.address = { $regex: address, $options: 'i' }
+    }
+
+    // Use aggregation pipeline to filter by hospital location
+    const aggregationPipeline: any[] = [
+      // Match blood inventory filters first
+      ...(Object.keys(bloodInventoryFilters).length > 0 ? [{ $match: bloodInventoryFilters }] : []),
+
+      // Join with hospital collection
+      {
+        $lookup: {
+          from: 'hospitals',
+          localField: 'hospitalId',
+          foreignField: '_id',
+          as: 'hospital'
+        }
+      },
+
+      // Unwind hospital array
+      { $unwind: '$hospital' },
+
+      // Match hospital filters
+      ...(Object.keys(hospitalFilters).length > 0
+        ? [
+            {
+              $match: {
+                ...Object.keys(hospitalFilters).reduce(
+                  (acc, key) => ({ ...acc, [`hospital.${key}`]: hospitalFilters[key] }),
+                  {}
+                )
+              }
+            }
+          ]
+        : []),
+
+      // Add hospital data to result
+      {
+        $addFields: {
+          hospitalId: {
+            _id: '$hospital._id',
+            name: '$hospital.name',
+            address: '$hospital.address',
+            province: '$hospital.province',
+            district: '$hospital.district',
+            ward: '$hospital.ward'
+          }
+        }
+      },
+
+      // Remove the hospital field
+      { $project: { hospital: 0 } },
+
+      // Sort by createdAt
+      { $sort: { createdAt: -1 } }
+    ]
+
+    // Execute aggregation
+    const items = await this.bloodInventoryModel.aggregate(aggregationPipeline)
+
+    // Handle pagination manually for aggregation
+    const page = pageOptions.page || 1
+    const limit = pageOptions.limit || 10
+    const skip = (page - 1) * limit
+
+    // Get total count
+    const totalCountPipeline: any[] = [...aggregationPipeline, { $count: 'total' }]
+
+    const totalResult = await this.bloodInventoryModel.aggregate(totalCountPipeline)
+    const totalRecords = totalResult.length > 0 ? totalResult[0].total : 0
+
+    // Apply pagination
+    const paginatedItems = items.slice(skip, skip + limit)
+
+    // Return paginated result
+    return {
+      data: paginatedItems,
+      meta: {
+        page,
+        limit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        hasPreviousPage: page > 1,
+        hasNextPage: page < Math.ceil(totalRecords / limit)
+      },
+      message: 'Blood inventory items retrieved successfully',
+      statusCode: 200
+    }
   }
 
   async findByHospital(hospitalId: string) {
