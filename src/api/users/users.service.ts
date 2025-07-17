@@ -88,18 +88,25 @@ export class UsersService {
   async findAll(current = 1, limit = 10, qs = ''): Promise<FindAllResult<User>> {
     const { filter = {}, sort, projection = '' } = aqp(qs)
 
+    // Nếu có trường 'qs' thì filter theo fullName hoặc email
+    if (qs) {
+      filter.$or = [{ fullName: { $regex: qs, $options: 'i' } }, { email: { $regex: qs, $options: 'i' } }]
+    }
+    console.log('filter', filter)
     const skip = (current - 1) * limit
     const total = await this.userModel.countDocuments(filter)
     const pages = Math.max(1, Math.ceil(total / limit))
 
     const query = this.userModel
-      .find(filter)
+      .find({
+        $or: [{ fullName: { $regex: qs, $options: 'i' } }, { email: { $regex: qs, $options: 'i' } }]
+      })
       .skip(skip)
       .limit(limit)
       .select(`${projection} -password -refreshTokens`)
       .populate('hospitalId', 'name address province district ward _id')
 
-    if (sort) query.sort(sort as any) // sửa lỗi sort('')
+    if (sort) query.sort(sort as any)
 
     const result = await query.exec()
 

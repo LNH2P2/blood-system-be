@@ -4,24 +4,19 @@ import { DonationRequestStatus, DonationRequestPriority } from 'src/constants/do
 
 export class UpdateDonationRequestDto {
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  hospitalId: string
-
-  @ApiProperty()
   @IsDateString()
-  @IsNotEmpty()
+  @IsOptional()
   scheduleDate: Date
 
   // Bổ sung các trường cho UI
   @ApiProperty({ example: 'A+' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   bloodType: string
 
   @ApiProperty({ example: 2 })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   quantity: number
 
   @ApiProperty({
@@ -35,12 +30,12 @@ export class UpdateDonationRequestDto {
 
   @ApiProperty({ example: 'Hà Nội' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   location: string
 
   @ApiProperty({ example: 'Nguyễn Văn A' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   createdBy: string
 
   @ApiProperty({ example: DonationRequestStatus.SCHEDULED })
