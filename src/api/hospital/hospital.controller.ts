@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger'
-import { ResponseMessage } from '../../decorators/response-message.decorator'
-import { HospitalService } from './hospital.service'
-import { CreateHospitalDto } from './dto/create-hospital.dto'
-import { UpdateHospitalDto } from './dto/update-hospital.dto'
-import { HospitalQueryDto } from './dto/hospital-query.dto'
-import { Hospital } from './schemas/hospital.schema'
-import { Public } from '../../decorators/public.decorator'
-import { UpdateBloodInventoryDto, AddBloodInventoryDto } from './dto/blood-inventory.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common'
+import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { Public } from '../../decorators/public.decorator'
+import { ResponseMessage } from '../../decorators/response-message.decorator'
+import { AddBloodInventoryDto, UpdateBloodInventoryDto } from './dto/blood-inventory.dto'
+import { CreateHospitalDto } from './dto/create-hospital.dto'
+import { HospitalQueryDto } from './dto/hospital-query.dto'
+import { UpdateHospitalDto } from './dto/update-hospital.dto'
+import { HospitalService } from './hospital.service'
+import { Hospital } from './schemas/hospital.schema'
 
 @ApiTags('hospitals')
 @Controller('hospitals')
@@ -38,6 +38,18 @@ export class HospitalController {
   findAll(@Query() query: HospitalQueryDto) {
     return this.hospitalService.findAll(query)
   }
+
+  @Get('names')
+  @Public()
+  @ApiOperation({ summary: 'Get all hospitals only name' })
+  @ApiOkResponse({
+    description: 'List of hospitals',
+    type: [Hospital]
+  })
+  findAllHospital() {
+    return this.hospitalService.getHospitalNames()
+  }
+
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get hospital by ID' })

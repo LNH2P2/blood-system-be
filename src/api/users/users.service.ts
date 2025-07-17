@@ -45,6 +45,7 @@ export class UsersService {
         dateOfBirth: createUserDto.dateOfBirth,
         address: [createUserDto.address],
         bloodType: createUserDto.bloodType || null,
+        hospitalId: createUserDto.hospitalId || null,
 
         // ✅ Tài khoản
         role: createUserDto.role,
@@ -91,7 +92,13 @@ export class UsersService {
     const total = await this.userModel.countDocuments(filter)
     const pages = Math.max(1, Math.ceil(total / limit))
 
-    const query = this.userModel.find(filter).skip(skip).limit(limit).select(`${projection} -password -refreshTokens`)
+    const query = this.userModel
+      .find(filter)
+      .skip(skip)
+      .limit(limit)
+      .select(`${projection} -password -refreshTokens`)
+      .populate('hospitalId', 'name address province district ward _id')
+
     if (sort) query.sort(sort as any) // sửa lỗi sort('')
 
     const result = await query.exec()
@@ -109,8 +116,17 @@ export class UsersService {
       const user = await this.userModel
         .findById(id)
         .select('-password -refreshTokens')
-        // .populate('createdAtBy', 'email _id')
+        .populate('hospitalId', 'name address province district ward _id')
         .exec()
+
+      if (!user) {
+        throw new ValidationException(ErrorCode.E002, RESPONSE_MESSAGES.USER_MESSAGE.NOT_FOUND)
+      }
+
+      // Nếu không có hospitalId (hoặc bị xóa khỏi DB), set = null
+      if (!user.hospitalId || typeof user.hospitalId !== 'object') {
+        user.hospitalId = null
+      }
       return user
     } catch (error) {
       if (error instanceof ValidationException) {

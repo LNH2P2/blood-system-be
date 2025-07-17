@@ -1,20 +1,21 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Transform, Type } from 'class-transformer'
 import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  IsOptional,
   IsArray,
   IsBoolean,
+  IsDate,
+  IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
-  ValidateNested,
-  Min,
+  IsOptional,
+  IsString,
+  Matches,
   Max,
-  Matches
+  Min,
+  ValidateNested
 } from 'class-validator'
-import { Type, Transform } from 'class-transformer'
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { BloodType, BloodComponent } from '../../../constants/hospital.constant'
+import { BloodComponent, BloodType } from '../../../constants/hospital.constant'
 
 export class ContactInfoDto {
   @ApiProperty({ description: 'Hospital phone number', example: '0123456789' })
@@ -58,7 +59,8 @@ export class BloodInventoryItemDto {
   quantity: number
 
   @ApiProperty({ description: 'Expiration date', example: '2025-12-31T23:59:59Z' })
-  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  @Type(() => Date)
   expiresAt: Date
 }
 

@@ -1,10 +1,10 @@
 import { jwtConstants } from '@constants/app.constant'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { PassportStrategy } from '@nestjs/passport'
-import { ExtractJwt, Strategy } from 'passport-jwt'
 import { InjectModel } from '@nestjs/mongoose'
+import { PassportStrategy } from '@nestjs/passport'
 import { Model } from 'mongoose'
+import { ExtractJwt, Strategy } from 'passport-jwt'
 import { User, UserDocument } from '../../users/schemas/user.entity'
 
 @Injectable()
@@ -33,7 +33,8 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwtaccess') {
       email: user.email,
       username: user.username,
       image: user.image,
-      role: user.role
+      role: user.role,
+      hospitalId: user.hospitalId ? user.hospitalId.toString() : null
     }
   }
 }
