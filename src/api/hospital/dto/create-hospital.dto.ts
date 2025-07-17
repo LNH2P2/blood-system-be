@@ -1,21 +1,21 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Transform, Type } from 'class-transformer'
 import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  IsOptional,
   IsArray,
   IsBoolean,
+  IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   ValidateNested,
   Min,
   Max,
   Matches,
-  IsISO8601
+  IsISO8601,
+  IsOptional,
+  IsString
 } from 'class-validator'
-import { Type, Transform } from 'class-transformer'
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { BloodType, BloodComponent } from '../../../constants/hospital.constant'
+import { BloodComponent, BloodType } from '../../../constants/hospital.constant'
 
 export class ContactInfoDto {
   @ApiProperty({ description: 'Hospital phone number', example: '0123456789' })

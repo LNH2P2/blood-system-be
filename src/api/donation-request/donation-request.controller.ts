@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req } from '@nestjs/common'
 import { DonationRequestService } from '@api/donation-request/donation-request.service'
 import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
-import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
 import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.dto'
-import { ResponseMessage } from '@decorators/response-message.decorator'
+import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Public } from '@decorators/public.decorator'
-import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { ResponseMessage } from '@decorators/response-message.decorator'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common'
+import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger'
 
 @Controller('donation-requests')
 @Public()
@@ -44,6 +44,46 @@ export class DonationRequestController {
   findAllHospital(@Query() listDonationReqDto: ListDonationReqDto) {
     console.log('listDonationReqDto', listDonationReqDto)
     return this.donationRequestService.findAllHospital(listDonationReqDto)
+  }
+
+  @Get('history-detailed')
+  @Public()
+  @ApiQuery({ name: 'year', required: false, type: String, description: 'Năm cần thống kê (mặc định là năm hiện tại)' })
+  async getHistoryDetailed(@Query('year') year?: string) {
+    const parsedYear = year ? parseInt(year) : undefined
+    return this.donationRequestService.getDonationHistoryDetailed(parsedYear)
+  }
+
+  @Get('request-stats')
+  @Public()
+  async getRequestStats() {
+    return this.donationRequestService.getRequestStats()
+  }
+
+  @Get('match-rate')
+  @Public()
+  @ApiQuery({ name: 'year', required: false, type: String, description: 'Năm cần thống kê (mặc định là năm hiện tại)' })
+  async getMatchRate(@Query('year') year?: string) {
+    const parsedYear = year ? parseInt(year) : new Date().getFullYear()
+    return this.donationRequestService.getMatchRateData(parsedYear)
+  }
+
+  @Get('demand-report')
+  @Public()
+  async getDemandReport() {
+    return this.donationRequestService.getDemandReport()
+  }
+
+  @Get('performance-report')
+  @Public()
+  async getPerformanceReport() {
+    return this.donationRequestService.getPerformanceReport()
+  }
+
+  @Get('incident-report')
+  @Public()
+  async getIncidentReport() {
+    return this.donationRequestService.getIncidentReport()
   }
 
   @Get(':id')

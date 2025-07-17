@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { Hospital, HospitalDocument } from './schemas/hospital.schema'
 import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
-import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
+import { UpdateHospitalDto } from './dto/update-hospital.dto'
 import { ValidateObjectId } from '../../exceptions/validattion.exception'
 import { PaginationUtil } from '../../utils/pagination.util'
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 import {
   BloodInventoryItem,
   BloodInventoryItemDocument
@@ -107,7 +107,7 @@ export class HospitalService {
       if (error instanceof BadRequestException || error instanceof ForbiddenException) {
         throw error
       }
-      throw new BadRequestException('Failed to create hospital')
+      throw new BadRequestException('Failed to create hospital', error.message)
     }
   }
   async findAll(query: HospitalQueryDto) {
@@ -349,5 +349,33 @@ export class HospitalService {
     }
 
     return hospital
+  }
+
+  async getHospitalNames() {
+    try {
+      const hospitals = await this.hospitalModel
+        .find({ isDeleted: false })
+        .sort({ createdAt: -1 })
+        .select('name _id')
+        .lean()
+        .exec()
+
+      if (!hospitals || hospitals.length === 0) {
+        throw new NotFoundException('No active hospitals found')
+      }
+
+      return hospitals.map((hospital) => ({
+        name: hospital.name,
+        _id: hospital._id
+      }))
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) {
+        throw error
+      }
+      throw new BadRequestException('Failed to get hospital names', {
+        cause: error,
+        description: error.message
+      })
+    }
   }
 }

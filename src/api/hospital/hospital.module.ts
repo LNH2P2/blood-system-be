@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common'
+import { AuthModule } from '@api/auth/auth.module'
+import { forwardRef, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { HospitalService } from './hospital.service'
 import { HospitalController } from './hospital.controller'
-import { Hospital, HospitalSchema } from './schemas/hospital.schema'
+import { HospitalService } from './hospital.service'
 import { HospitalStaff, HospitalStaffSchema } from './schemas/hospital-staff.schema'
 import { BloodInventoryItem, BloodInventoryItemSchema } from '@api/blood-inventory/schemas/blood-inventory-item.schema'
-import { AuthModule } from '@api/auth/auth.module'
+import { Hospital, HospitalSchema } from './schemas/hospital.schema'
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { AuthModule } from '@api/auth/auth.module'
       { name: HospitalStaff.name, schema: HospitalStaffSchema },
       { name: BloodInventoryItem.name, schema: BloodInventoryItemSchema }
     ]),
-    AuthModule
+    forwardRef(() => AuthModule) // Forward reference to AuthModule for circular dependency resolution
   ],
   controllers: [HospitalController],
   providers: [HospitalService],
