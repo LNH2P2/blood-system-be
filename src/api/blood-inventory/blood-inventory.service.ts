@@ -45,7 +45,14 @@ export class BloodInventoryService {
     }
 
     const bloodInventoryItem = new this.bloodInventoryModel(inventoryData)
-    return await bloodInventoryItem.save()
+    const newBloodInventoryItem = await bloodInventoryItem.save()
+    await this.hospitalModel.findByIdAndUpdate(
+      item.hospitalId,
+      { $push: { bloodInventory: newBloodInventoryItem } },
+      { new: true }
+    )
+
+    return newBloodInventoryItem
   }
 
   async findAll(query?: PageOptionsDto) {
@@ -112,13 +119,17 @@ export class BloodInventoryService {
       updateData.expiresAt = expirationDate as any
     }
 
-    // Validate hospital if provided
+    // Validate hospital if provided and handle hospital change
+    const oldHospitalId = existingItem.hospitalId.toString()
+    let newHospitalId = oldHospitalId
+
     if (updateData.hospitalId) {
       const hospital = await this.hospitalModel.findById(updateData.hospitalId)
       if (!hospital) {
         throw new NotFoundException('Hospital not found')
       }
-      updateData.hospitalId = new Types.ObjectId(updateData.hospitalId) as any
+      newHospitalId = updateData.hospitalId
+      updateData.hospitalId = updateData.hospitalId as any
     }
 
     const updatedItem = await this.bloodInventoryModel
@@ -126,25 +137,109 @@ export class BloodInventoryService {
       .populate('hospitalId', 'name address')
       .exec()
 
+    // Sync with hospital collection
+    if (updatedItem) {
+      const embeddedItem = {
+        bloodType: updatedItem.bloodType,
+        component: updatedItem.component,
+        quantity: updatedItem.quantity,
+        expiresAt: updatedItem.expiresAt,
+        createdAt: updatedItem.createdAt,
+        updatedAt: updatedItem.updatedAt,
+        hospitalId: updatedItem.hospitalId
+      }
+
+      // If hospital changed, remove from old hospital and add to new
+      if (oldHospitalId !== newHospitalId) {
+        // Remove from old hospital
+        await this.hospitalModel.findByIdAndUpdate(oldHospitalId, {
+          $pull: {
+            bloodInventory: existingItem
+          }
+        })
+
+        // Add to new hospital
+        await this.hospitalModel.findByIdAndUpdate(newHospitalId, { $push: { bloodInventory: embeddedItem } })
+      } else {
+        // Update existing item in same hospital
+        await this.hospitalModel.findOneAndUpdate(
+          {
+            _id: oldHospitalId,
+            'bloodInventory.bloodType': existingItem.bloodType,
+            'bloodInventory.component': existingItem.component,
+            'bloodInventory.quantity': existingItem.quantity,
+            'bloodInventory.expiresAt': existingItem.expiresAt,
+            'bloodInventory.createdAt': existingItem.createdAt,
+            'bloodInventory.updatedAt': existingItem.updatedAt,
+            'bloodInventory.hospitalId': existingItem.hospitalId
+          },
+          {
+            $set: {
+              'bloodInventory.$': embeddedItem
+            }
+          }
+        )
+      }
+    }
+
     return updatedItem
   }
 
   async remove(id: string) {
     ValidateObjectId(id)
 
+    const itemToDelete = await this.bloodInventoryModel.findById(id)
+    if (!itemToDelete) {
+      throw new NotFoundException('Blood inventory item not found')
+    }
+
+    // Delete from blood inventory collection
     const result = await this.bloodInventoryModel.findByIdAndDelete(id)
     if (!result) {
       throw new NotFoundException('Blood inventory item not found')
     }
+
+    // Sync with hospital collection - remove from embedded bloodInventory array
+    await this.hospitalModel.findByIdAndUpdate(itemToDelete.hospitalId, {
+      $pull: {
+        bloodInventory: {
+          bloodType: itemToDelete.bloodType,
+          component: itemToDelete.component,
+          quantity: itemToDelete.quantity,
+          expiresAt: itemToDelete.expiresAt
+        }
+      }
+    })
 
     return { message: 'Blood inventory item deleted successfully' }
   }
 
   async removeExpiredItems() {
     const now = new Date()
+
+    // First, get all expired items for syncing
+    const expiredItems = await this.bloodInventoryModel.find({
+      expiresAt: { $lt: now }
+    })
+
+    // Delete expired items from blood inventory collection
     const result = await this.bloodInventoryModel.deleteMany({
       expiresAt: { $lt: now }
     })
+
+    // Sync with hospital collection - remove expired items from embedded arrays
+    for (const expiredItem of expiredItems) {
+      await this.hospitalModel.findByIdAndUpdate(expiredItem.hospitalId, {
+        $pull: {
+          bloodInventory: {
+            bloodType: expiredItem.bloodType,
+            component: expiredItem.component,
+            quantity: expiredItem.quantity,
+            expiresAt: expiredItem.expiresAt
+          }
+        }
+      })
+    }
 
     return {
       message: `Removed ${result.deletedCount} expired blood inventory items`

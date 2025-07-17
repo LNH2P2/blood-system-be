@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { Hospital, HospitalDocument } from './schemas/hospital.schema'
 import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
@@ -247,6 +247,21 @@ export class HospitalService {
       }
     }
 
+    // First, remove all existing blood inventory items for this hospital from separate collection
+    await this.bloodInventoryItemModel.deleteMany({ hospitalId: id })
+
+    // Create new blood inventory items in separate collection
+    const bloodInventoryItems = bloodInventory.map((item) => ({
+      ...item,
+      hospitalId: new Types.ObjectId(id),
+      expiresAt: new Date(item.expiresAt)
+    }))
+
+    if (bloodInventoryItems.length > 0) {
+      await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+    }
+
+    // Update hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
         { _id: id, isDeleted: false },
@@ -288,6 +303,17 @@ export class HospitalService {
       )
     }
 
+    // Create item in separate blood inventory collection
+    const bloodInventoryItemData = {
+      ...bloodItem,
+      hospitalId: new Types.ObjectId(id),
+      expiresAt: expirationDate
+    }
+
+    const newBloodInventoryItem = new this.bloodInventoryItemModel(bloodInventoryItemData)
+    await newBloodInventoryItem.save()
+
+    // Add to hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
         { _id: id, isDeleted: false },

@@ -5,7 +5,6 @@ import { CreateBloodInventoryDto } from './dto/create-blood-inventory.dto'
 import { UpdateBloodInventoryDto } from './dto/update-blood-inventory.dto'
 import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
-import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto'
 
 @ApiTags('blood-inventory')
