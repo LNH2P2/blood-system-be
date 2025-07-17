@@ -23,6 +23,7 @@ import { APP_GUARD } from '@nestjs/core'
 import { JwtAccessAuthGuard } from '@api/auth/guard/auth-access.guard'
 import { LocalFilesModule } from './api/local-files/local-files.module'
 import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
+import { BloodInventoryModule } from './api/blood-inventory/blood-inventory.module'
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { RestJwtAuthGuard } from 'src/guards/jwt.guard'
       }),
       inject: [ConfigService]
     }),
-    LocalFilesModule
+    LocalFilesModule,
+    BloodInventoryModule
   ],
   controllers: [AppController],
   providers: [

@@ -24,6 +24,10 @@ export class PaginationQueryDto {
   @Min(1, { message: 'limit must be at least 1' })
   limit: number
 
+  @Type(() => String)
+  @IsOptional()
+  populate: string
+
   @ApiProperty({
     required: false,
     description: 'Query string to filter, sort, paginate'

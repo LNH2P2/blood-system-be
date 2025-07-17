@@ -48,9 +48,9 @@ export class UsersController {
     return this.usersService.findAll(current, limit, qs || '')
   }
 
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get a user by Id' })
   @Get(':id')
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'User found successfully',
@@ -69,6 +69,7 @@ export class UsersController {
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.UPDATED_SUCCESS)
   })
   @Patch(':id')
+  @Public()
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Request() req) {
     const user = req.user || null
     return this.usersService.update(id, updateUserDto, user)
@@ -81,11 +82,13 @@ export class UsersController {
     example: ResponseOnlyMessage(200, RESPONSE_MESSAGES.USER_MESSAGE.DELETE_SUCCESS)
   })
   @Delete(':id')
+  @Public()
   remove(@Param('id') id: string, @Request() req) {
     const user = req.user || null
     return this.usersService.remove(id, user)
   }
 
+  @ApiBearerAuth('access-token')
   @Post(':id/addresses')
   @ApiOperation({ summary: 'Add new address for user' })
   @ApiBody({ type: CreateAddressDto })
@@ -98,7 +101,7 @@ export class UsersController {
     return this.usersService.createAddress(id, createAddressDto)
   }
 
-  @ApiBearerAuth('access-token')
+  @Public()
   @Patch(':id/addresses/:addressId')
   @ApiOperation({ summary: 'Update address for user by addressId' })
   @ApiBody({ type: UpdateAddressDto })
