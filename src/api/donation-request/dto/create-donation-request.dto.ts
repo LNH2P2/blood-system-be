@@ -43,14 +43,14 @@ export class CreateDonationRequestDto {
     example: 'A+'
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   bloodType: string
 
   @ApiProperty({
     example: 2
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   quantity: number
 
   @ApiProperty({
@@ -64,7 +64,7 @@ export class CreateDonationRequestDto {
     example: 'Hà Nội'
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   location: string
 
   @ApiProperty({
