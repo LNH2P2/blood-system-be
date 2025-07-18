@@ -262,6 +262,7 @@ export class BloodInventoryService {
     // Sync with hospital collection
     if (updatedItem) {
       const embeddedItem = {
+        _id: updatedItem._id,
         bloodType: updatedItem.bloodType,
         component: updatedItem.component,
         quantity: updatedItem.quantity,
