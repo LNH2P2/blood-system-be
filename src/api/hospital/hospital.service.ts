@@ -66,40 +66,38 @@ export class HospitalService {
         }
       }
 
-      let savedBloodInventoryItems: any[] = []
-
-      // Create blood inventory items in separate collection first if provided
-      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
-        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
-          ...item,
-          hospitalId: null, // Will be set after hospital creation
-          expiresAt: new Date(item.expiresAt)
-        }))
-
-        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
-      }
-
-      // Create hospital with blood inventory items that have the same _id
+      // Create hospital first without blood inventory
       const hospitalData = {
         ...createHospitalDto,
-        bloodInventory:
-          savedBloodInventoryItems.length > 0 ? savedBloodInventoryItems : createHospitalDto.bloodInventory
+        bloodInventory: [] // Initialize as empty array
       }
 
       const hospital = new this.hospitalModel(hospitalData)
       const savedHospital = await hospital.save()
 
-      // Update the hospitalId in the blood inventory items if they exist
-      if (savedBloodInventoryItems.length > 0) {
-        await this.bloodInventoryItemModel.updateMany(
-          { _id: { $in: savedBloodInventoryItems.map((item) => item._id) } },
-          { $set: { hospitalId: savedHospital._id } }
-        )
+      let savedBloodInventoryItems: any[] = []
 
-        // Update the hospital's bloodInventory with the correct hospitalId
-        await this.hospitalModel.findByIdAndUpdate(savedHospital._id, {
-          $set: { bloodInventory: savedBloodInventoryItems.map((item) => ({ ...item, hospitalId: savedHospital._id })) }
-        })
+      // Create blood inventory items in separate collection with correct hospitalId
+      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
+        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
+          ...item,
+          hospitalId: savedHospital._id,
+          expiresAt: new Date(item.expiresAt)
+        }))
+
+        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+
+        // Update the hospital's bloodInventory with the created items
+        const updatedHospital = await this.hospitalModel
+          .findByIdAndUpdate(savedHospital._id, { $set: { bloodInventory: savedBloodInventoryItems } }, { new: true })
+          .lean()
+          .exec()
+
+        if (!updatedHospital) {
+          throw new NotFoundException('Hospital not found after update')
+        }
+
+        return updatedHospital
       }
 
       return savedHospital
