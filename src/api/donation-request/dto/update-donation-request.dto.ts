@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsNotEmpty, IsString, IsNumber, IsEnum, IsMongoId, IsOptional } from 'class-validator'
+import { IsDateString, IsString, IsNumber, IsEnum, IsOptional } from 'class-validator'
 import { DonationRequestStatus, DonationRequestPriority } from 'src/constants/donation.constant'
 
 export class UpdateDonationRequestDto {
@@ -8,7 +8,6 @@ export class UpdateDonationRequestDto {
   @IsOptional()
   scheduleDate: Date
 
-  // Bổ sung các trường cho UI
   @ApiProperty({ example: 'A+' })
   @IsString()
   @IsOptional()

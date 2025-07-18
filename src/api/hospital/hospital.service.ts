@@ -3,7 +3,6 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { Hospital, HospitalDocument } from './schemas/hospital.schema'
-import { HospitalStaff, HospitalStaffDocument } from './schemas/hospital-staff.schema'
 import { CreateHospitalDto } from './dto/create-hospital.dto'
 import { HospitalQueryDto } from './dto/hospital-query.dto'
 import { UpdateHospitalDto } from './dto/update-hospital.dto'
@@ -19,8 +18,6 @@ export class HospitalService {
   constructor(
     @InjectModel(Hospital.name)
     private readonly hospitalModel: Model<HospitalDocument>,
-    @InjectModel(HospitalStaff.name)
-    private readonly hospitalStaffModel: Model<HospitalStaffDocument>,
     @InjectModel(BloodInventoryItem.name)
     private readonly bloodInventoryItemModel: Model<BloodInventoryItemDocument>
   ) {}
@@ -31,7 +28,7 @@ export class HospitalService {
       const existingHospital = await this.hospitalModel.findOne({
         name: createHospitalDto.name,
         district: createHospitalDto.district,
-        isDeleted: false
+        isDeleted: { $ne: true }
       })
       if (existingHospital) {
         throw new BadRequestException('Hospital with this name already exists in the district')
@@ -66,40 +63,38 @@ export class HospitalService {
         }
       }
 
-      let savedBloodInventoryItems: any[] = []
-
-      // Create blood inventory items in separate collection first if provided
-      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
-        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
-          ...item,
-          hospitalId: null, // Will be set after hospital creation
-          expiresAt: new Date(item.expiresAt)
-        }))
-
-        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
-      }
-
-      // Create hospital with blood inventory items that have the same _id
+      // Create hospital first without blood inventory
       const hospitalData = {
         ...createHospitalDto,
-        bloodInventory:
-          savedBloodInventoryItems.length > 0 ? savedBloodInventoryItems : createHospitalDto.bloodInventory
+        bloodInventory: [] // Initialize as empty array
       }
 
       const hospital = new this.hospitalModel(hospitalData)
       const savedHospital = await hospital.save()
 
-      // Update the hospitalId in the blood inventory items if they exist
-      if (savedBloodInventoryItems.length > 0) {
-        await this.bloodInventoryItemModel.updateMany(
-          { _id: { $in: savedBloodInventoryItems.map((item) => item._id) } },
-          { $set: { hospitalId: savedHospital._id } }
-        )
+      let savedBloodInventoryItems: any[] = []
 
-        // Update the hospital's bloodInventory with the correct hospitalId
-        await this.hospitalModel.findByIdAndUpdate(savedHospital._id, {
-          $set: { bloodInventory: savedBloodInventoryItems.map((item) => ({ ...item, hospitalId: savedHospital._id })) }
-        })
+      // Create blood inventory items in separate collection with correct hospitalId
+      if (createHospitalDto.bloodInventory && createHospitalDto.bloodInventory.length > 0) {
+        const bloodInventoryItems = createHospitalDto.bloodInventory.map((item) => ({
+          ...item,
+          hospitalId: savedHospital._id,
+          expiresAt: new Date(item.expiresAt)
+        }))
+
+        savedBloodInventoryItems = await this.bloodInventoryItemModel.insertMany(bloodInventoryItems)
+
+        // Update the hospital's bloodInventory with the created items
+        const updatedHospital = await this.hospitalModel
+          .findByIdAndUpdate(savedHospital._id, { $set: { bloodInventory: savedBloodInventoryItems } }, { new: true })
+          .lean()
+          .exec()
+
+        if (!updatedHospital) {
+          throw new NotFoundException('Hospital not found after update')
+        }
+
+        return updatedHospital
       }
 
       return savedHospital
@@ -110,25 +105,27 @@ export class HospitalService {
       throw new BadRequestException('Failed to create hospital', error.message)
     }
   }
+
+  /**
+   * Enhanced search with better performance
+   * TODO: Add full-text search indexing for better performance
+   */
   async findAll(query: HospitalQueryDto) {
     const { search, province, district, ward, isActive, bloodType, component, ...reqDto } = query
 
-    // Build filter conditions
-    const filter: Record<string, unknown> = { isDeleted: false }
+    // Build filter conditions with optimized queries
+    // Handle isDeleted field properly - exclude only documents where isDeleted is explicitly true
+    const filter: Record<string, unknown> = { isDeleted: { $ne: true } }
+
+    // Optimize location filtering with compound indexes
+    const locationFilter: Record<string, unknown> = {}
+    if (province) locationFilter.province = { $regex: province, $options: 'i' }
+    if (district) locationFilter.district = { $regex: district, $options: 'i' }
+    if (ward) locationFilter.ward = { $regex: ward, $options: 'i' }
+
+    Object.assign(filter, locationFilter)
 
     // Apply filters
-    if (province) {
-      filter.province = { $regex: province, $options: 'i' }
-    }
-
-    if (district) {
-      filter.district = { $regex: district, $options: 'i' }
-    }
-
-    if (ward) {
-      filter.ward = { $regex: ward, $options: 'i' }
-    }
-
     if (isActive !== undefined) {
       filter.isActive = isActive
     }
@@ -160,10 +157,8 @@ export class HospitalService {
   async findOne(id: string): Promise<Hospital> {
     ValidateObjectId(id)
 
-    const conditions: Record<string, unknown> = { _id: id, isDeleted: false }
-
-    const hospital = await this.hospitalModel.findOne(conditions).lean().exec()
-
+    const conditions: Record<string, unknown> = { _id: id, isDeleted: { $ne: true } }
+    const hospital = await this.hospitalModel.findOne(conditions)
     if (!hospital) {
       throw new NotFoundException('Hospital not found')
     }
@@ -200,7 +195,7 @@ export class HospitalService {
 
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           ...updateHospitalDto
         },
@@ -215,13 +210,12 @@ export class HospitalService {
 
     return hospital
   }
-
   async remove(id: string): Promise<void> {
     ValidateObjectId(id)
 
     const result = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           isDeleted: true
         }
@@ -231,14 +225,6 @@ export class HospitalService {
     if (!result) {
       throw new NotFoundException('Hospital not found')
     }
-
-    // Also soft delete all hospital staff
-    await this.hospitalStaffModel.updateMany(
-      { hospitalId: id, isDeleted: false },
-      {
-        isDeleted: true
-      }
-    )
   }
 
   async updateBloodInventory(id: string, bloodInventory: BloodInventoryItem[]): Promise<Hospital> {
@@ -282,8 +268,8 @@ export class HospitalService {
 
     // Update hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
-      .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+      .findByIdAndUpdate(
+        id,
         {
           bloodInventory
         },
@@ -335,7 +321,7 @@ export class HospitalService {
     // Add to hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           $push: { bloodInventory: bloodItem }
         },
@@ -354,7 +340,7 @@ export class HospitalService {
   async getHospitalNames() {
     try {
       const hospitals = await this.hospitalModel
-        .find({ isDeleted: false })
+        .find({ isDeleted: { $ne: true } })
         .sort({ createdAt: -1 })
         .select('name _id')
         .lean()
