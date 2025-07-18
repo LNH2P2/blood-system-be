@@ -19,21 +19,18 @@ export class HospitalQueryDto extends PageOptionsDto {
   })
   @IsOptional()
   @IsString()
-  @Length(2, 50)
   @Matches(/^[a-zA-ZÀ-ỹ\s]+$/, { message: 'Province name must contain only letters and spaces' })
   province?: string
 
   @ApiPropertyOptional({ description: 'Filter by district' })
   @IsOptional()
   @IsString()
-  @Length(2, 50)
   @Matches(/^[a-zA-ZÀ-ỹ0-9\s]+$/, { message: 'District name must contain only letters, numbers and spaces' })
   district?: string
 
   @ApiPropertyOptional({ description: 'Filter by ward' })
   @IsOptional()
   @IsString()
-  @Length(2, 50)
   ward?: string
 
   @ApiPropertyOptional({
