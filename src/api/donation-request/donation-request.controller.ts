@@ -35,7 +35,7 @@ export class DonationRequestController {
   findAll(@Query() listDonationReqDto: ListDonationReqDto, @Req() req: any) {
     console.log('req.user', req.user)
     // TODO: get userId from req.user
-    return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
+    return this.donationRequestService.findAll('687aa3bdbb57032008becc23', listDonationReqDto)
   }
 
   //Admin, staff
