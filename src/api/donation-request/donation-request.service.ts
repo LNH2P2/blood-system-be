@@ -83,6 +83,14 @@ export class DonationRequestService {
     })
   }
 
+  async updateStatus(id: string, status: DonationRequestStatus) {
+    const updatedRequest = await this.donationMatchModel
+      .findByIdAndUpdate(id, { status }, { new: true })
+      .populate('hospitalId')
+
+    return updatedRequest
+  }
+
   async getDonationHistoryDetailed(year?: number) {
     try {
       const now = new Date()

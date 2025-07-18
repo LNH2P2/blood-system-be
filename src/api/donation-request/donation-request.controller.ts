@@ -2,6 +2,7 @@ import { DonationRequestService } from '@api/donation-request/donation-request.s
 import { CreateDonationRequestDto } from '@api/donation-request/dto/create-donation-request.dto'
 import { ListDonationReqDto } from '@api/donation-request/dto/list-donation.req.dto'
 import { UpdateDonationRequestDto } from '@api/donation-request/dto/update-donation-request.dto'
+import { DonationRequestStatus } from '@constants/donation.constant'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
 import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
@@ -37,6 +38,7 @@ export class DonationRequestController {
     return this.donationRequestService.findAll('6848f28cddd4f001f846e347', listDonationReqDto)
   }
 
+  //Admin, staff
   @Get('findAllHospital')
   @ApiOperation({ summary: 'Get all donation requests for hospital (for hospital dashboard)' })
   @ApiQuery({ type: ListDonationReqDto })
@@ -96,6 +98,12 @@ export class DonationRequestController {
   @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
   update(@Param('id') id: string, @Body() updateDonationRequestDto: UpdateDonationRequestDto) {
     return this.donationRequestService.update(id, updateDonationRequestDto)
+  }
+
+  @Patch(':id/status')
+  @ResponseMessage(RESPONSE_MESSAGES.DONATION_REQUEST.UPDATED)
+  updateStatus(@Param('id') id: string, @Body() updateStatusDto: { status: DonationRequestStatus }) {
+    return this.donationRequestService.updateStatus(id, updateStatusDto.status)
   }
 
   @Get('debug/hospitals')

@@ -22,17 +22,17 @@ export class DonationRequest {
   note?: string
 
   // Bổ sung các trường cho UI
-  @Prop({ required: true })
+  @Prop({ required: true, default: 'O+' })
   bloodType: string
 
-  @Prop({ required: true })
-  quantity: number
+  @Prop({ required: true, default: 100 })
+  quantity: number // Số lượng máu (ml)
 
   @Prop({ required: true, enum: DonationRequestPriority, default: DonationRequestPriority.NORMAL })
   priority: DonationRequestPriority
 
-  @Prop({ required: true })
-  location: string
+  @Prop({})
+  location?: string
 
   @Prop({ required: true })
   createdBy: string

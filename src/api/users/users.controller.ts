@@ -1,7 +1,7 @@
 import { RolesGuard } from '@api/auth/strategies/role.strategy'
 import { PaginationQueryDto } from '@common/dto/pagination/pagination.query.dto'
 import { RESPONSE_MESSAGES } from '@constants/response-messages.constant'
-import { Public } from '@decorators/public.decorator'
+// import { Public } from '@decorators/public.decorator'
 import { ResponseMessage } from '@decorators/response-message.decorator'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from './schemas/user.entity'
 import { UserResponseExample, UserResponseExampleList } from './user-type/res.user'
 import { UsersService } from './users.service'
+import { Public } from '@decorators/public.decorator'
 
 @ApiTags('users') // tag trùng với addTag ở trên
 @Controller({ path: 'users' }) // ⬅️ Gắn version 1
