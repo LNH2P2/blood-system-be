@@ -28,7 +28,7 @@ export class HospitalService {
       const existingHospital = await this.hospitalModel.findOne({
         name: createHospitalDto.name,
         district: createHospitalDto.district,
-        isDeleted: false
+        isDeleted: { $ne: true }
       })
       if (existingHospital) {
         throw new BadRequestException('Hospital with this name already exists in the district')
@@ -116,7 +116,8 @@ export class HospitalService {
     const { search, province, district, ward, isActive, bloodType, component, ...reqDto } = query
 
     // Build filter conditions with optimized queries
-    const filter: Record<string, unknown> = { isDeleted: false }
+    // Handle isDeleted field properly - exclude only documents where isDeleted is explicitly true
+    const filter: Record<string, unknown> = { isDeleted: { $ne: true } }
 
     // Optimize location filtering with compound indexes
     const locationFilter: Record<string, unknown> = {}
@@ -158,7 +159,7 @@ export class HospitalService {
   async findOne(id: string): Promise<Hospital> {
     ValidateObjectId(id)
 
-    const conditions: Record<string, unknown> = { _id: id, isDeleted: false }
+    const conditions: Record<string, unknown> = { _id: id, isDeleted: { $ne: true } }
     const hospital = await this.hospitalModel.findOne(conditions)
     if (!hospital) {
       throw new NotFoundException('Hospital not found')
@@ -196,7 +197,7 @@ export class HospitalService {
 
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           ...updateHospitalDto
         },
@@ -216,7 +217,7 @@ export class HospitalService {
 
     const result = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           isDeleted: true
         }
@@ -322,7 +323,7 @@ export class HospitalService {
     // Add to hospital's embedded bloodInventory array
     const hospital = await this.hospitalModel
       .findOneAndUpdate(
-        { _id: id, isDeleted: false },
+        { _id: id, isDeleted: { $ne: true } },
         {
           $push: { bloodInventory: bloodItem }
         },
@@ -341,7 +342,7 @@ export class HospitalService {
   async getHospitalNames() {
     try {
       const hospitals = await this.hospitalModel
-        .find({ isDeleted: false })
+        .find({ isDeleted: { $ne: true } })
         .sort({ createdAt: -1 })
         .select('name _id')
         .lean()
